@@ -13,7 +13,6 @@
     <div id="jump_wrapper">
       <div id="jump_page">
         <a class="source" href="curl-tutorial.html">curl-tutorial.sh</a>
-        <a class="source" href="g5k-campaign-tutorial.html">g5k-campaign-tutorial.rb</a>
         <a class="source" href="restfully-tutorial.html">restfully-tutorial.rb</a>
         </div>
     </div>
@@ -55,12 +54,6 @@ command-line tool to issue one-shot requests against the Grid'5000 API.</p>
           <a class="pilcrow" href="#section-Prerequisites">&#182;</a>
         </div>
         <h2>Prerequisites</h2>
-
-<p>You&rsquo;ll need the cURL command-line tool. If it&rsquo;s not already installed,
-use your package manager to fetch it. E.g.:</p>
-
-<pre><code>sudo apt-get install curl
-</code></pre>
       </td>
       <td class=code>
         <div class='highlight'><pre></pre></div>
@@ -70,6 +63,32 @@ use your package manager to fetch it. E.g.:</p>
       <td class=docs>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>You&rsquo;ll need the cURL command-line tool. If it&rsquo;s not already installed,
+use your package manager to fetch it. E.g.:</p>
+
+<pre><code>sudo apt-get install curl
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Let&amp;rsquo;s_do_some_cURLing'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Let&amp;rsquo;s_do_some_cURLing">&#182;</a>
+        </div>
+        <h2>Let&rsquo;s do some cURLing</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
         </div>
         <p>Test that you can access the Grid'5000 API. Replace <code>login</code> and <code>password</code>
 with their respective value (your Grid'5000 credentials).
@@ -172,22 +191,10 @@ interchange format), and contains a list of <code>links</code> to related resour
         <div class='highlight'><pre>curl -ki -u login:password https://api.grid5000.fr/2.0/grid5000/sites/rennes</pre></div>
       </td>
     </tr>
-    <tr id='section-5'>
+    <tr id='section-7'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-5">&#182;</a>
-        </div>
-        <p>As an example, you can fetch the list of scheduled jobs on the <code>rennes</code> site by issuing a request to the following URI.
-You can remove the <code>-i</code> flag if you do not want to display the HTTP headers from the response.</p>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre>curl -ki -u login:password https://api.grid5000.fr/2.0/grid5000/sites/rennes/jobs</pre></div>
-      </td>
-    </tr>
-    <tr id='section-6'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-6">&#182;</a>
+          <a class="pilcrow" href="#section-7">&#182;</a>
         </div>
         <p>If you want to avoid entering your credentials for every request, <code>cURL</code> can
 use a configuration file (<code>~/.netrc</code>) to store them.
@@ -202,21 +209,33 @@ Then, you just have to pass the <code>-n</code> flag to <code>cURL</code> so tha
 chmod 600 ~/.netrc</pre></div>
       </td>
     </tr>
-    <tr id='section-7'>
+    <tr id='section-8'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-7">&#182;</a>
+          <a class="pilcrow" href="#section-8">&#182;</a>
         </div>
         <p>Retry the previous request with the <code>-n</code> flag, and you should get the same result.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes</pre></div>
+      </td>
+    </tr>
+    <tr id='section-9'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-9">&#182;</a>
+        </div>
+        <p>Now, as an example, you can fetch the list of scheduled jobs on the <code>rennes</code> site by issuing a request to the following URI.
+Note that you can remove the <code>-i</code> flag if you do not want to display the HTTP headers from the response.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes/jobs</pre></div>
       </td>
     </tr>
-    <tr id='section-8'>
+    <tr id='section-10'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-8">&#182;</a>
+          <a class="pilcrow" href="#section-10">&#182;</a>
         </div>
         <p>At this point, you may want to add your very own job to the previous list.
 Use the <code>POST</code> method to create a new job that just sleeps for 30 minutes.
@@ -251,10 +270,10 @@ Vary: Accept-Encoding
 -d <span class="s1">&#39;command=sleep 1800&#39;</span></pre></div>
       </td>
     </tr>
-    <tr id='section-9'>
+    <tr id='section-11'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-9">&#182;</a>
+          <a class="pilcrow" href="#section-11">&#182;</a>
         </div>
         <p>Notice the <code>201 Created</code> status code and the <code>Location</code> HTTP header in the previous response.
 The latter indicates where the full job description can be fetched.
@@ -311,10 +330,10 @@ Vary: Accept-Encoding
         <div class='highlight'><pre>curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes/jobs/381093</pre></div>
       </td>
     </tr>
-    <tr id='section-10'>
+    <tr id='section-12'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-10">&#182;</a>
+          <a class="pilcrow" href="#section-12">&#182;</a>
         </div>
         <p>We can see that our job is <code>running</code> on the node <code>paramount-7.rennes.grid5000.fr</code>.
 Since it does not do anything useful, we can kill it by issuing a <code>DELETE</code> request on its URI.
@@ -332,10 +351,10 @@ Vary: Accept-Encoding
         <div class='highlight'><pre>curl -kni -X DELETE https://api.grid5000.fr/2.0/grid5000/sites/rennes/jobs/381093</pre></div>
       </td>
     </tr>
-    <tr id='section-11'>
+    <tr id='section-13'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-11">&#182;</a>
+          <a class="pilcrow" href="#section-13">&#182;</a>
         </div>
         <p>This concludes our short tour of using the Grid'5000 API with cURL.
 You will find many more examples in the respective documentation of each API.
