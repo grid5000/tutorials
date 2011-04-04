@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>restfully-tutorial.rb</title>
+  <link rel="stylesheet" href="http://github.com/jashkenas/docco/raw/0.3.0/resources/docco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div id="jump_to">
+    Jump To &hellip;
+    <div id="jump_wrapper">
+      <div id="jump_page">
+        <a class="source" href="curl-tutorial.html">curl-tutorial.sh</a>
+        <a class="source" href="g5k-campaign-tutorial.html">g5k-campaign-tutorial.rb</a>
+        <a class="source" href="restfully-tutorial.html">restfully-tutorial.rb</a>
+        </div>
+    </div>
+  </div>
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>restfully-tutorial.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-1'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-1">&#182;</a>
+        </div>
+        <p>This tutorial will show you how to reserve nodes and deploy a specific
+environment on every site of Grid'5000 (granted there are nodes available),
+using the <a href="http://github.com/grid5000/restfully">Restfully</a> Ruby library.</p>
+
+<p>You can download the source file for this tutorial from here: <a href="https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb">https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb</a>.</p>
+
+<p>Note that you can also use Restfully in an interactive manner:</p>
+
+<pre><code>restfully -c ~/.restfully/api.grid5000.fr.yml
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Prerequisites'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Prerequisites">&#182;</a>
+        </div>
+        <h2>Prerequisites</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>You need to install a few libraries for this script to work:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;rubygems&#39;</span>        <span class="c1"># or: export RUBYOPT=&quot;-rubygems&quot;</span>
+<span class="nb">require</span> <span class="s1">&#39;restfully&#39;</span>       <span class="c1"># gem install restfully</span>
+<span class="nb">require</span> <span class="s1">&#39;net/ssh/gateway&#39;</span> <span class="c1"># gem install net-ssh-gateway</span>
+<span class="nb">require</span> <span class="s1">&#39;json&#39;</span>            <span class="c1"># gem install json</span>
+<span class="nb">require</span> <span class="s1">&#39;yaml&#39;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Initialization'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Initialization">&#182;</a>
+        </div>
+        <h2>Initialization</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>Declare a logger to log messages:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">LOGGER</span>       <span class="o">=</span> <span class="no">Logger</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">STDERR</span><span class="p">)</span>
+<span class="no">LOGGER</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="no">Logger</span><span class="o">::</span><span class="no">INFO</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>Load the Restfully configuration file that contains your API credentials.
+Create the file if it does not exist:</p>
+
+<pre><code>mkdir ~/.restfully
+cat &lt;&lt;EOF &gt; ~/.restfully/api.grid5000.fr.yml
+base_uri: https://api.grid5000.fr/2.0/grid5000
+username: your-grid5000-login
+password: your-grid5000-password
+EOF
+chmod 600 ~/.restfully/api.grid5000.fr.yml
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">CONFIG</span> <span class="o">=</span> <span class="no">YAML</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="no">File</span><span class="o">.</span><span class="n">expand_path</span><span class="p">(</span><span class="s2">&quot;~/.restfully/api.grid5000.fr.yml&quot;</span><span class="p">))</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p>Attempts to find a public SSH key in your home directory.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">PUBLIC_KEY</span>       <span class="o">=</span> <span class="no">Dir</span><span class="o">[</span><span class="no">File</span><span class="o">.</span><span class="n">expand_path</span><span class="p">(</span><span class="s2">&quot;~/.ssh/*.pub&quot;</span><span class="p">)</span><span class="o">][</span><span class="mi">0</span><span class="o">]</span>
+<span class="nb">fail</span> <span class="s2">&quot;No public key available in ~/.ssh !&quot;</span> <span class="k">if</span> <span class="no">PUBLIC_KEY</span><span class="o">.</span><span class="n">nil?</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p>Attempts to find the corresponding private part of the SSH key.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">PRIVATE_KEY</span>  <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">expand_path</span><span class="p">(</span><span class="s2">&quot;~/.ssh/</span><span class="si">#{</span><span class="no">File</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="no">PUBLIC_KEY</span><span class="p">,</span> <span class="s2">&quot;.pub&quot;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">fail</span> <span class="s2">&quot;No private key corresponding to the public key available in ~/.ssh !&quot;</span> <span class="k">unless</span> <span class="no">File</span><span class="o">.</span><span class="n">file?</span><span class="p">(</span><span class="no">PRIVATE_KEY</span><span class="p">)</span>
+
+<span class="no">LOGGER</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;Using the SSH public key located at: </span><span class="si">#{</span><span class="no">PUBLIC_KEY</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">&quot;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-9'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-9">&#182;</a>
+        </div>
+        <p>Create an SSH gateway to access the Grid'5000 machines from outside.
+Note that this is not needed if you operate from a Grid'5000 frontend.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">GATEWAY</span>      <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">SSH</span><span class="o">::</span><span class="no">Gateway</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;access.lille.grid5000.fr&#39;</span><span class="p">,</span> <span class="no">CONFIG</span><span class="o">[</span><span class="s2">&quot;username&quot;</span><span class="o">]</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-10'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-10">&#182;</a>
+        </div>
+        <p>Structures to keep track of the jobs and deployments we submit.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">JOBS</span>         <span class="o">=</span> <span class="o">[]</span>
+<span class="no">DEPLOYMENTS</span>  <span class="o">=</span> <span class="o">[]</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-11'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-11">&#182;</a>
+        </div>
+        <p>We don&rsquo;t want to wait forever, right?</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">TIMEOUT_JOB</span>  <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="mi">60</span> <span class="c1"># 2 minutes</span>
+<span class="no">TIMEOUT_DEPLOYMENT</span> <span class="o">=</span> <span class="mi">15</span><span class="o">*</span><span class="mi">60</span> <span class="c1"># 15 minutes</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-12'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-12">&#182;</a>
+        </div>
+        <p>The command to run on each node after they are deployed:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">COMMAND</span> <span class="o">=</span> <span class="s2">&quot;hostname&quot;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-13'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-13">&#182;</a>
+        </div>
+        <p>Be a good citizen and delete everything when an error or interruption occurs:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">def</span> <span class="nf">cleanup!</span>
+  <span class="no">LOGGER</span><span class="o">.</span><span class="n">warn</span> <span class="s2">&quot;Received cleanup request, killing all jobs and deployments...&quot;</span>
+  <span class="no">DEPLOYMENTS</span><span class="o">.</span><span class="n">each</span><span class="p">{</span><span class="o">|</span><span class="n">deployment</span><span class="o">|</span> <span class="n">deployment</span><span class="o">.</span><span class="n">delete</span><span class="p">}</span>
+  <span class="no">JOBS</span><span class="o">.</span><span class="n">each</span><span class="p">{</span><span class="o">|</span><span class="n">job</span><span class="o">|</span> <span class="n">job</span><span class="o">.</span><span class="n">delete</span><span class="p">}</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-14'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-14">&#182;</a>
+        </div>
+        <p>Cleanup everything upon receiving SIGINT or SIGTERM:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="sx">%w{INT TERM}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">signal</span><span class="o">|</span>
+  <span class="no">Signal</span><span class="o">.</span><span class="n">trap</span><span class="p">(</span><span class="n">signal</span><span class="p">){</span> 
+    <span class="n">cleanup!</span> 
+    <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Main_part_of_the_code'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Main_part_of_the_code">&#182;</a>
+        </div>
+        <h2>Main part of the code</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">begin</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-16'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-16">&#182;</a>
+        </div>
+        <p>Open a session to the API:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="no">Restfully</span><span class="o">::</span><span class="no">Session</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+    <span class="ss">:base_uri</span> <span class="o">=&gt;</span> <span class="no">CONFIG</span><span class="o">[</span><span class="s1">&#39;base_uri&#39;</span><span class="o">]</span><span class="p">,</span>
+    <span class="ss">:username</span> <span class="o">=&gt;</span> <span class="no">CONFIG</span><span class="o">[</span><span class="s1">&#39;username&#39;</span><span class="o">]</span><span class="p">,</span>
+    <span class="ss">:password</span> <span class="o">=&gt;</span> <span class="no">CONFIG</span><span class="o">[</span><span class="s1">&#39;password&#39;</span><span class="o">]</span><span class="p">,</span>
+    <span class="ss">:logger</span> <span class="o">=&gt;</span> <span class="no">LOGGER</span>
+  <span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">root</span><span class="p">,</span> <span class="n">session</span><span class="o">|</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-17'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-17">&#182;</a>
+        </div>
+        <p>Loop over each Grid'5000 site and attempts to reserve nodes:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">root</span><span class="o">.</span><span class="n">sites</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">site</span><span class="o">|</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-18'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-18">&#182;</a>
+        </div>
+        <p>For each Grid'5000 site, fetch its status
+and submit a job if there is at least one node available.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>      <span class="k">if</span> <span class="n">site</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">find</span><span class="p">{</span> <span class="o">|</span><span class="n">node</span><span class="o">|</span>
+        <span class="n">node</span><span class="o">[</span><span class="s1">&#39;system_state&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;free&#39;</span> <span class="o">&amp;&amp;</span> <span class="n">node</span><span class="o">[</span><span class="s1">&#39;hardware_state&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;alive&#39;</span>
+      <span class="p">}</span> <span class="k">then</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-19'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-19">&#182;</a>
+        </div>
+        <p>The OAR scheduler expects a program to be run.
+In our case we will deploy our own environment
+and execute a script later,
+therefore we just tell him to sleep for the duration of the job.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>        <span class="n">new_job</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">jobs</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+          <span class="ss">:resources</span> <span class="o">=&gt;</span> <span class="s2">&quot;nodes=1,walltime=00:30:00&quot;</span><span class="p">,</span>
+          <span class="ss">:command</span> <span class="o">=&gt;</span> <span class="s2">&quot;sleep 1800&quot;</span><span class="p">,</span>
+          <span class="ss">:types</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">&quot;deploy&quot;</span><span class="o">]</span><span class="p">,</span>
+          <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">&quot;API Main Practical&quot;</span>
+        <span class="p">)</span> <span class="k">rescue</span> <span class="kp">nil</span>
+        <span class="no">JOBS</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">new_job</span><span class="p">)</span> <span class="k">unless</span> <span class="n">new_job</span><span class="o">.</span><span class="n">nil?</span>
+      <span class="k">else</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;Skipped </span><span class="si">#{</span><span class="n">site</span><span class="o">[</span><span class="s1">&#39;uid&#39;</span><span class="o">]</span><span class="si">}</span><span class="s2">. Not enough free nodes.&quot;</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="k">if</span> <span class="no">JOBS</span><span class="o">.</span><span class="n">empty?</span>
+      <span class="n">session</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span> <span class="s2">&quot;No jobs, exiting...&quot;</span>
+      <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-20'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-20">&#182;</a>
+        </div>
+        <p>Wait until all jobs are running.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">begin</span>
+      <span class="no">Timeout</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="no">TIMEOUT_JOB</span><span class="p">)</span> <span class="k">do</span>
+        <span class="k">until</span> <span class="no">JOBS</span><span class="o">.</span><span class="n">all?</span><span class="p">{</span><span class="o">|</span><span class="n">job</span><span class="o">|</span>
+          <span class="n">job</span><span class="o">.</span><span class="n">reload</span><span class="o">[</span><span class="s1">&#39;state&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;running&#39;</span>
+        <span class="p">}</span> <span class="k">do</span>
+          <span class="n">session</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;Some jobs are not running. Waiting before checking again...&quot;</span>
+          <span class="nb">sleep</span> <span class="no">TIMEOUT_JOB</span><span class="o">/</span><span class="mi">30</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="k">rescue</span> <span class="no">Timeout</span><span class="o">::</span><span class="no">Error</span> <span class="o">=&gt;</span> <span class="n">e</span>
+      <span class="n">session</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span> <span class="s2">&quot;One of the jobs is still not running, it will be discarded.&quot;</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-21'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-21">&#182;</a>
+        </div>
+        <p>Deploy a specific image on all of our reserved nodes</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="no">JOBS</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">job</span><span class="o">|</span>
+      <span class="k">next</span> <span class="k">if</span> <span class="n">job</span><span class="o">[</span><span class="s1">&#39;state&#39;</span><span class="o">]</span> <span class="o">!=</span> <span class="s1">&#39;running&#39;</span>
+      <span class="n">new_deployment</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">deployments</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+        <span class="ss">:environment</span> <span class="o">=&gt;</span> <span class="s2">&quot;lenny-x64-base&quot;</span><span class="p">,</span>
+        <span class="ss">:nodes</span> <span class="o">=&gt;</span> <span class="n">job</span><span class="o">[</span><span class="s1">&#39;assigned_nodes&#39;</span><span class="o">]</span><span class="p">,</span>
+        <span class="ss">:key</span> <span class="o">=&gt;</span> <span class="no">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="no">PUBLIC_KEY</span><span class="p">)</span>
+      <span class="p">)</span> <span class="k">rescue</span> <span class="kp">nil</span>
+      <span class="no">DEPLOYMENTS</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">new_deployment</span><span class="p">)</span> <span class="k">unless</span> <span class="n">new_deployment</span><span class="o">.</span><span class="n">nil?</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-22'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-22">&#182;</a>
+        </div>
+        <p>Exit if no deployments</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">if</span> <span class="no">DEPLOYMENTS</span><span class="o">.</span><span class="n">empty?</span>
+      <span class="n">session</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span> <span class="s2">&quot;No deployments, exiting...&quot;</span>
+      <span class="n">cleanup!</span>
+      <span class="nb">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-23'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-23">&#182;</a>
+        </div>
+        <p>Wait until all deployments are no longer processing.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="k">begin</span>
+      <span class="no">Timeout</span><span class="o">.</span><span class="n">timeout</span><span class="p">(</span><span class="no">TIMEOUT_DEPLOYMENT</span><span class="p">)</span> <span class="k">do</span>
+        <span class="k">until</span> <span class="no">DEPLOYMENTS</span><span class="o">.</span><span class="n">all?</span><span class="p">{</span> <span class="o">|</span><span class="n">deployment</span><span class="o">|</span>
+          <span class="n">deployment</span><span class="o">.</span><span class="n">reload</span><span class="o">[</span><span class="s1">&#39;status&#39;</span><span class="o">]</span> <span class="o">!=</span> <span class="s1">&#39;processing&#39;</span>
+        <span class="p">}</span> <span class="k">do</span>
+          <span class="n">session</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;Some deployments are not terminated. Waiting before checking again...&quot;</span>
+          <span class="nb">sleep</span> <span class="no">TIMEOUT_DEPLOYMENT</span><span class="o">/</span><span class="mi">30</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="k">rescue</span> <span class="no">Timeout</span><span class="o">::</span><span class="no">Error</span> <span class="o">=&gt;</span> <span class="n">e</span>
+      <span class="n">session</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span> <span class="s2">&quot;One of the deployments is still not terminated, it will be discarded.&quot;</span>
+    <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-24'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-24">&#182;</a>
+        </div>
+        <p>Connect to all our nodes an execute a command on each one:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="no">DEPLOYMENTS</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">deployment</span><span class="o">|</span>
+      <span class="k">next</span> <span class="k">if</span> <span class="n">deployment</span><span class="o">.</span><span class="n">reload</span><span class="o">[</span><span class="s1">&#39;status&#39;</span><span class="o">]</span> <span class="o">!=</span> <span class="s1">&#39;terminated&#39;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-25'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-25">&#182;</a>
+        </div>
+        <p>Connect as <code>root</code> to the nodes, via the specified gateway.
+What follows is a naive approach that works for small numbers of nodes.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>      <span class="n">deployment</span><span class="o">[</span><span class="s2">&quot;nodes&quot;</span><span class="o">].</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">host</span><span class="o">|</span>
+        <span class="nb">puts</span> <span class="s2">&quot;Connecting to </span><span class="si">#{</span><span class="n">host</span><span class="si">}</span><span class="s2"> and running </span><span class="si">#{</span><span class="no">COMMAND</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">...&quot;</span>
+        <span class="no">GATEWAY</span><span class="o">.</span><span class="n">ssh</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;root&quot;</span><span class="p">,</span>
+          <span class="ss">:keys</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="no">PRIVATE_KEY</span><span class="o">]</span><span class="p">,</span> <span class="ss">:auth_methods</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="s2">&quot;publickey&quot;</span><span class="o">]</span>
+        <span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">ssh</span><span class="o">|</span>
+          <span class="nb">puts</span> <span class="n">ssh</span><span class="o">.</span><span class="n">exec!</span><span class="p">(</span><span class="no">COMMAND</span><span class="p">)</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+    
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-26'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-26">&#182;</a>
+        </div>
+        <p>Rescue and display any exception that could be raised:</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">rescue</span> <span class="no">StandardError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+  <span class="no">LOGGER</span><span class="o">.</span><span class="n">warn</span> <span class="s2">&quot;Catched unexpected exception </span><span class="si">#{</span><span class="n">e</span><span class="o">.</span><span class="n">class</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2"> - </span><span class="si">#{</span><span class="n">e</span><span class="o">.</span><span class="n">backtrace</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+  <span class="n">cleanup!</span>
+  <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    </table>
+</div>
+</body>
