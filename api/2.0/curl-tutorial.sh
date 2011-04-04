@@ -5,11 +5,15 @@
 
 # Prerequisites
 # ---------------------------
+
 # You'll need the cURL command-line tool. If it's not already installed, 
 # use your package manager to fetch it. E.g.:
 # 
 #     sudo apt-get install curl
 #
+
+# Let's do some cURLing
+# ---------------------------
 
 # Test that you can access the Grid'5000 API. Replace `login` and `password`
 # with their respective value (your Grid'5000 credentials).
@@ -108,10 +112,6 @@
 # interchange format), and contains a list of `links` to related resources.
 curl -ki -u login:password https://api.grid5000.fr/2.0/grid5000/sites/rennes
 
-# As an example, you can fetch the list of scheduled jobs on the `rennes` site by issuing a request to the following URI.
-# You can remove the `-i` flag if you do not want to display the HTTP headers from the response.
-curl -ki -u login:password https://api.grid5000.fr/2.0/grid5000/sites/rennes/jobs
-
 # If you want to avoid entering your credentials for every request, `cURL` can 
 # use a configuration file (`~/.netrc`) to store them.
 # Then, you just have to pass the `-n` flag to `cURL` so that it takes it into account.
@@ -123,6 +123,10 @@ EOF
 chmod 600 ~/.netrc
 
 # Retry the previous request with the `-n` flag, and you should get the same result.
+curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes
+
+# Now, as an example, you can fetch the list of scheduled jobs on the `rennes` site by issuing a request to the following URI.
+# Note that you can remove the `-i` flag if you do not want to display the HTTP headers from the response.
 curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes/jobs
 
 # At this point, you may want to add your very own job to the previous list.
