@@ -1,8 +1,21 @@
-# This tutorial will show you how to reserve nodes and deploy a specific environment on every site of Grid'5000 (granted there are nodes available), using the [Restfully](http://github.com/grid5000/restfully) Ruby library.
+#!/usr/bin/env ruby
+
+# This tutorial will show you how to reserve nodes and deploy a specific
+# environment on every site of Grid'5000 (granted there are nodes available), 
+# using the [Restfully](http://github.com/grid5000/restfully) Ruby library.
+#
+# You can download the source file for this tutorial from here: <https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb>.
+#
+# Note that you can also use Restfully in an interactive manner:
+# 
+#     restfully -c ~/.restfully/api.grid5000.fr.yml
+#
 
 # Prerequisites
 # ---------------------------
+
 # You need to install a few libraries for this script to work:
+require 'rubygems'        # or: export RUBYOPT="-rubygems"
 require 'restfully'       # gem install restfully
 require 'net/ssh/gateway' # gem install net-ssh-gateway
 require 'json'            # gem install json
@@ -11,30 +24,42 @@ require 'yaml'
 # Initialization
 # ---------------------------
 
-# Declare a logger to log messages
+# Declare a logger to log messages:
 LOGGER       = Logger.new(STDERR)
 LOGGER.level = Logger::INFO
 
-# Load the Restfully configuration file that contains the API credentials
+# Load the Restfully configuration file that contains your API credentials.
+# Create the file if it does not exist:
+#
+#     mkdir ~/.restfully
+#     cat <<EOF > ~/.restfully/api.grid5000.fr.yml
+#     base_uri: https://api.grid5000.fr/2.0/grid5000
+#     username: your-grid5000-login
+#     password: your-grid5000-password
+#     EOF
+#     chmod 600 ~/.restfully/api.grid5000.fr.yml
+#
 CONFIG = YAML.load_file(File.expand_path("~/.restfully/api.grid5000.fr.yml"))
 
-# Attempts to find a public SSH key
+# Attempts to find a public SSH key in your home directory.
 PUBLIC_KEY       = Dir[File.expand_path("~/.ssh/*.pub")][0]
 fail "No public key available in ~/.ssh !" if PUBLIC_KEY.nil?
 
-# Attempts to find the corresponding private part of the SSH key
+# Attempts to find the corresponding private part of the SSH key.
 PRIVATE_KEY  = File.expand_path("~/.ssh/#{File.basename(PUBLIC_KEY, ".pub")}")
 fail "No private key corresponding to the public key available in ~/.ssh !" unless File.file?(PRIVATE_KEY)
 
 LOGGER.info "Using the SSH public key located at: #{PUBLIC_KEY.inspect}"
 
 # Create an SSH gateway to access the Grid'5000 machines from outside.
-# This is not needed if you operate from a Grid'5000 frontend.
+# Note that this is not needed if you operate from a Grid'5000 frontend.
 GATEWAY      = Net::SSH::Gateway.new('access.lille.grid5000.fr', CONFIG["username"])
 
+# Structures to keep track of the jobs and deployments we submit.
 JOBS         = []
 DEPLOYMENTS  = []
 
+# We don't want to wait forever, right?
 TIMEOUT_JOB  = 2*60 # 2 minutes
 TIMEOUT_DEPLOYMENT = 15*60 # 15 minutes
 
@@ -59,7 +84,7 @@ end
 # Main part of the code
 # ---------------------------
 begin
-  # Open a session to the API
+  # Open a session to the API:
   Restfully::Session.new(
     :base_uri => CONFIG['base_uri'],
     :username => CONFIG['username'],
@@ -94,7 +119,7 @@ begin
       exit(0)
     end
 
-    # Wait until all jobs are running.
+    # Once all the jobs have been submitted, we wait until all are running.
     begin
       Timeout.timeout(TIMEOUT_JOB) do
         until JOBS.all?{|job|
@@ -110,7 +135,7 @@ begin
 
     # Deploy a specific image on all of our reserved nodes
     JOBS.each do |job|
-      next if job['state'] != 'running'
+      next if job.reload['state'] != 'running'
       new_deployment = job.parent.deployments.submit(
         :environment => "lenny-x64-base",
         :nodes => job['assigned_nodes'],
