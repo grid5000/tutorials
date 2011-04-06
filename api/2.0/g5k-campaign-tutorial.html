@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>g5k-campaign-tutorial.rb</title>
+  <link rel="stylesheet" href="http://github.com/jashkenas/docco/raw/0.3.0/resources/docco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div id="jump_to">
+    Jump To &hellip;
+    <div id="jump_wrapper">
+      <div id="jump_page">
+          <a class="source" href="curl-tutorial.html">curl-tutorial.sh</a>
+          <a class="source" href="g5k-campaign-tutorial.html">g5k-campaign-tutorial.rb</a>
+          <a class="source" href="restfully-tutorial.html">restfully-tutorial.rb</a>
+      </div>
+    </div>
+  </div>
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>g5k-campaign-tutorial.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-1'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-1">&#182;</a>
+        </div>
+        
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>This tutorial will show you how to use the <a href="http://g5k-campaign.gforge.inria.fr">g5k-campaign</a>
+tool to easily build a whole experiment workflow.</p>
+
+<p>This tool is built on the <a href="http://github.com/restfully">Restfully</a> library,
+and provide a higher level of abstraction, with support for parallel
+execution of reservations, deployments, and resource configuration.</p>
+
+<p>You can download the source file for this tutorial from here:
+<a href="https://github.com/grid5000/tutorials/blob/master/api/2.0/g5k-campaign-tutorial.rb">https://github.com/grid5000/tutorials/blob/master/api/2.0/g5k-campaign-tutorial.rb</a>.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Prerequisites'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Prerequisites">&#182;</a>
+        </div>
+        <h2>Prerequisites</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>You need to install the <code>g5k-campaign</code> library. Assuming you have <code>Ruby</code> and
+<code>rubygems</code> (1.3.6+) already installed on your system, this can be done with:</p>
+
+<pre><code>gem install g5k-campaign \
+--source http://g5k-campaign.gforge.inria.fr/pkg
+</code></pre>
+
+<p>The library comes with an executable.
+You can get a better feel of what it can do by displaying the usage help:</p>
+
+<pre><code>g5k-campaign -h
+</code></pre>
+
+<p>If you do not provide any option, it will launch a campaign using the default parameters, which are:</p>
+
+<ul>
+<li>submit a 1-hour job on one node of the <code>rennes</code> site, and</li>
+<li>deploy the <code>lenny-x64-base</code> environment on the reserved node.</li>
+</ul>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Building_your_own_engine'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Building_your_own_engine">&#182;</a>
+        </div>
+        <h2>Building your own engine</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>You can play a little with the various options of the default engine, but
+it is probably more useful to create your own engine that will execute
+specific actions before, after or at any state of your experiment.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p>Let&rsquo;s start with a simple engine:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">SimpleCustomEngine</span> <span class="o">&lt;</span> <span class="no">Grid5000</span><span class="o">::</span><span class="no">Campaign</span><span class="o">::</span><span class="no">Engine</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p>We override some of the parameters.
+The complete list of options can be found <a href="http://g5k-campaign.gforge.inria.fr/Grid5000/Campaign/Engine.html">here</a>.
+Note that every parameter given on the command-line will always overwrite those defined in the engine.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">set</span> <span class="ss">:environment</span><span class="p">,</span> <span class="s2">&quot;lenny-x64-base&quot;</span>
+  <span class="n">set</span> <span class="ss">:resources</span><span class="p">,</span> <span class="s2">&quot;nodes=2&quot;</span>
+  <span class="n">set</span> <span class="ss">:walltime</span><span class="p">,</span> <span class="mi">7200</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-9'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-9">&#182;</a>
+        </div>
+        <p>By default, all the reserved nodes are released when the engine terminates.
+Here we want to keep the nodes available after the end of the workflow, so that we can still use them.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">set</span> <span class="ss">:no_cleanup</span><span class="p">,</span> <span class="kp">true</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-10'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-10">&#182;</a>
+        </div>
+        <p>Define an action to execute before reserving resources:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">before</span> <span class="ss">:reserve!</span> <span class="k">do</span> <span class="o">|</span><span class="n">env</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="o">|</span>
+    <span class="nb">puts</span> <span class="s2">&quot;Executed before reservation!&quot;</span>
+    <span class="n">env</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-11'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-11">&#182;</a>
+        </div>
+        <p>Define an action to execute after deploying resources:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">after</span> <span class="ss">:deployment!</span> <span class="k">do</span> <span class="o">|</span><span class="n">env</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="o">|</span>
+    <span class="nb">puts</span> <span class="s2">&quot;Nodes have been deployed: </span><span class="si">#{</span><span class="n">env</span><span class="o">[</span><span class="ss">:nodes</span><span class="o">].</span><span class="n">inspect</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">env</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-12'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-12">&#182;</a>
+        </div>
+        <p>Define an action to execute on the installation phase (i.e. after reservation and deployment are done):</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">on</span> <span class="ss">:install!</span> <span class="k">do</span> <span class="o">|</span><span class="n">env</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="o">|</span>
+    <span class="nb">puts</span> <span class="s2">&quot;Installing additional software on the nodes...&quot;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-13'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-13">&#182;</a>
+        </div>
+        <p>We SSH to each node to install additional software.
+Note that this is a naive approach that only works for small numbers of nodes.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">env</span><span class="o">[</span><span class="ss">:nodes</span><span class="o">].</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">node</span><span class="o">|</span>
+      <span class="n">ssh</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;root&quot;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">ssh</span><span class="o">|</span>
+        <span class="nb">puts</span> <span class="n">ssh</span><span class="o">.</span><span class="n">exec!</span><span class="p">(</span><span class="s2">&quot;apt-get update &amp;&amp; apt-get install -y ganglia-monitor bonnie++&quot;</span><span class="p">)</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-14'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-14">&#182;</a>
+        </div>
+        <p>You can easily copy files on your nodes if you wish.
+Here we just send a file containing the list of reserved nodes.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>        <span class="n">nodes_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/</span><span class="si">#{</span><span class="n">env</span><span class="o">[</span><span class="ss">:job</span><span class="o">][</span><span class="s1">&#39;uid&#39;</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">ssh</span><span class="o">.</span><span class="n">scp</span><span class="o">.</span><span class="n">upload!</span><span class="p">(</span><span class="no">StringIO</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">env</span><span class="o">[</span><span class="ss">:nodes</span><span class="o">].</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)),</span> <span class="n">nodes_file</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+    <span class="n">env</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-15'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-15">&#182;</a>
+        </div>
+        <p>Define an action to execute after the nodes have been reserved, deployed, and installed:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">on</span> <span class="ss">:execute!</span> <span class="k">do</span> <span class="o">|</span><span class="n">env</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="o">|</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-16'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-16">&#182;</a>
+        </div>
+        <p>Use the :multi option if you want to run SSH commands in parallel.
+This is better than sequentially SSHing to nodes, but for large number
+of nodes, you should probably connect to the frontend and launch a
+<a href="taktuk.gforge.inria.fr/"><code>taktuk</code></a> process for efficient execution.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">ssh</span><span class="p">(</span><span class="n">env</span><span class="o">[</span><span class="ss">:nodes</span><span class="o">]</span><span class="p">,</span> <span class="s2">&quot;root&quot;</span><span class="p">,</span> <span class="ss">:multi</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">ssh</span><span class="o">|</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-17'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-17">&#182;</a>
+        </div>
+        <p>Run the <code>bonnie++</code> benchmark on each node, and send a random value for a custom metric:</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>      <span class="n">cmd</span> <span class="o">=</span> <span class="sx">%Q{nohup sh -c &#39;(while true; do gmetric --name custom_metric_</span><span class="si">#{</span><span class="n">env</span><span class="o">[</span><span class="ss">:user</span><span class="o">]</span><span class="si">}</span><span class="sx"> --type uint16 --value $RANDOM; sleep 5; done &amp;) &amp;&amp; bonnie++ -u root -d /tmp 1&gt;/dev/null 2&gt;&amp;1&#39; &gt;/dev/null &amp;}</span>
+      <span class="nb">puts</span> <span class="n">cmd</span>
+  
+      <span class="n">ssh</span><span class="o">.</span><span class="n">exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+      <span class="n">ssh</span><span class="o">.</span><span class="n">loop</span>
+    <span class="k">end</span>
+    <span class="n">env</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-18'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-18">&#182;</a>
+        </div>
+        <p>Poll the values for two timeseries (our custom metric and <code>cpu_idle</code>).
+Note how we use the <code>connection</code> handler, available to any engine, which
+is in fact just a <code>Restfully::Session</code> object.
+See the Restfully tutorial for more details.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">after</span> <span class="ss">:execute!</span> <span class="k">do</span> <span class="o">|</span><span class="n">env</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="o">|</span>
+    <span class="n">from</span> <span class="o">=</span> <span class="n">env</span><span class="o">[</span><span class="ss">:job</span><span class="o">][</span><span class="s1">&#39;submitted_at&#39;</span><span class="o">]</span>
+    <span class="n">resolution</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="mi">100</span><span class="o">.</span><span class="n">times</span> <span class="k">do</span>
+      <span class="n">to</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">to_i</span><span class="o">-</span><span class="n">resolution</span>
+      <span class="o">[</span><span class="s2">&quot;custom_metric_</span><span class="si">#{</span><span class="n">env</span><span class="o">[</span><span class="ss">:user</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu_idle&quot;</span><span class="o">].</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">metric</span><span class="o">|</span>
+        <span class="k">begin</span>
+          <span class="nb">puts</span> <span class="s2">&quot;*** Fetching timeseries for </span><span class="si">#{</span><span class="n">metric</span><span class="si">}</span><span class="s2"> metric...&quot;</span>
+          <span class="n">connection</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">sites</span><span class="o">[</span><span class="n">env</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">to_sym</span><span class="o">].</span><span class="n">metrics</span><span class="o">[</span><span class="n">metric</span><span class="o">.</span><span class="n">to_sym</span><span class="o">].</span>
+          <span class="n">timeseries</span><span class="p">(</span>
+            <span class="ss">:query</span> <span class="o">=&gt;</span> <span class="p">{</span>
+              <span class="ss">:only</span> <span class="o">=&gt;</span> <span class="n">env</span><span class="o">[</span><span class="ss">:nodes</span><span class="o">].</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">),</span>
+              <span class="ss">:resolution</span> <span class="o">=&gt;</span> <span class="n">resolution</span><span class="p">,</span>
+              <span class="ss">:from</span> <span class="o">=&gt;</span> <span class="n">from</span><span class="p">,</span>
+              <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="n">to</span>
+            <span class="p">}</span>
+          <span class="p">)</span><span class="o">.</span><span class="n">reload</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">timeseries</span><span class="o">|</span>
+            <span class="nb">puts</span> <span class="n">timeseries</span><span class="o">[</span><span class="s1">&#39;uid&#39;</span><span class="o">]</span>
+            <span class="nb">p</span> <span class="n">timeseries</span><span class="o">[</span><span class="s1">&#39;values&#39;</span><span class="o">]</span>
+          <span class="k">end</span>
+        <span class="k">rescue</span> <span class="o">=&gt;</span> <span class="n">e</span>
+          <span class="nb">puts</span> <span class="s2">&quot;Error: </span><span class="si">#{</span><span class="n">e</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+      <span class="nb">sleep</span> <span class="mi">10</span>
+    <span class="k">end</span>
+    <span class="n">env</span>
+  <span class="k">end</span>
+
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Running_your_engines'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Running_your_engines">&#182;</a>
+        </div>
+        <h2>Running your engines</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-20'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-20">&#182;</a>
+        </div>
+        <p>To execute this engine, you have two solutions.
+Either you copy the <a href="#section-2">source file</a> on your machine, and then launch it as follows:</p>
+
+<pre><code>g5k-campaign -i path/to/file --gateway access.lille.grid5000.fr
+</code></pre>
+
+<p>or you directly pass the source file URI to <code>g5k-campaign</code> (but you can&rsquo;t make changes):</p>
+
+<pre><code>g5k-campaign -i https://github.com/grid5000/tutorials\
+/raw/master/api/2.0/g5k-campaign-tutorial.rb \
+--gateway access.lille.grid5000.fr
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-Conclusion'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-Conclusion">&#182;</a>
+        </div>
+        <h2>Conclusion</h2>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+    <tr id='section-22'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-22">&#182;</a>
+        </div>
+        <p>This concludes our tutorial, please see the <a href="http://g5k-campaign.gforge.inria.fr/">documentation</a> and
+<a href="https://gforge.inria.fr/plugins/scmgit/cgi-bin/gitweb.cgi?p=g5k-campaign/g5k-campaign.git;a=tree;f=examples;hb=HEAD">examples</a> for more advanced usages,
+including grid reservation, multiple deployments, notifications, etc.</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre></pre></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
