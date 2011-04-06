@@ -9,18 +9,10 @@ If you want to contribute a tutorial or example, or just make a change to an exi
 Alternatively, you can send an email to the devel mailing list of Grid'5000 (see Links below).
 
 ## Links
-* <https://www.grid5000.fr/>
-
-  The Grid'5000 wiki, with exhaustive documentation on how to use Grid'5000.
-* <https://api.grid5000.fr/>
-  
-  The Grid'5000 API help page.
-* <https://www.grid5000.fr/mediawiki/index.php/Support>
-
-  The support page, in case you encounter issues.
-* <https://www.grid5000.fr/mediawiki/index.php/Mailing_lists>
-
-  An overview of the various mailing lists of Grid'5000.
+* <https://www.grid5000.fr/> - The Grid'5000 wiki, with exhaustive documentation on how to use Grid'5000.
+* <https://api.grid5000.fr/> - The Grid'5000 API help page.
+* <https://www.grid5000.fr/mediawiki/index.php/Support> - The support page, in case you encounter issues.
+* <https://www.grid5000.fr/mediawiki/index.php/Mailing_lists> - An overview of the various mailing lists of Grid'5000.
 
 ## Copyright
 Copyright (c) 2011 Cyril Rohr   
