@@ -1,9 +1,14 @@
 #!/usr/bin/env ruby
 
-# This tutorial will show you how to use the [g5k-campaign](http://g5k-campaign.gforge.inria.fr) tool to easily build a whole experiment workflow.
-# This tool is built on the [Restfully](http://github.com/restfully) library, and provide a higher level of abstraction, with support for parallel execution of reservations, deployments, and resource configuration.
+# This tutorial will show you how to use the [g5k-campaign](http://g5k-campaign.gforge.inria.fr) 
+# tool to easily build a whole experiment workflow.
 #
-# You can download the source file for this tutorial from here: <https://github.com/grid5000/tutorials/blob/master/api/2.0/g5k-campaign-tutorial.rb>.
+# This tool is built on the [Restfully](http://github.com/restfully) library, 
+# and provide a higher level of abstraction, with support for parallel 
+# execution of reservations, deployments, and resource configuration.
+#
+# You can download the source file for this tutorial from here:
+# <https://github.com/grid5000/tutorials/blob/master/api/2.0/g5k-campaign-tutorial.rb>.
 #
 
 # Prerequisites
@@ -37,7 +42,8 @@
 
 class SimpleCustomEngine < Grid5000::Campaign::Engine
 
-  # We override some of the parameters. The complete list of options can be found [here](http://g5k-campaign.gforge.inria.fr/Grid5000/Campaign/Engine.html).
+  # We override some of the parameters. 
+  # The complete list of options can be found [here](http://g5k-campaign.gforge.inria.fr/Grid5000/Campaign/Engine.html).
   # Note that every parameter given on the command-line will always overwrite those defined in the engine.
   set :environment, "lenny-x64-base"
   set :resources, "nodes=2"
@@ -77,7 +83,10 @@ class SimpleCustomEngine < Grid5000::Campaign::Engine
 
   # Define an action to execute after the nodes have been reserved, deployed, and installed:
   on :execute! do |env, *args|
-    # Use the :multi option if you want to run SSH commands in parallel. This is better than sequentially SSHing to nodes, but for large number of nodes, you should probably connect to the frontend and launch a [`taktuk`](taktuk.gforge.inria.fr/) process for efficient execution.
+    # Use the :multi option if you want to run SSH commands in parallel. 
+    # This is better than sequentially SSHing to nodes, but for large number 
+    # of nodes, you should probably connect to the frontend and launch a 
+    # [`taktuk`](taktuk.gforge.inria.fr/) process for efficient execution.
     ssh(env[:nodes], "root", :multi => true) do |ssh|
       # Run the `bonnie++` benchmark on each node, and send a random value for a custom metric:
       cmd = %Q{nohup sh -c '(while true; do gmetric --name custom_metric_#{env[:user]} --type uint16 --value $RANDOM; sleep 5; done &) && bonnie++ -u root -d /tmp 1>/dev/null 2>&1' >/dev/null &}
@@ -90,7 +99,8 @@ class SimpleCustomEngine < Grid5000::Campaign::Engine
   end
 
   # Poll the values for two timeseries (our custom metric and `cpu_idle`).
-  # Note how we use the `connection` handler, available to any engine, which is in fact just a `Restfully::Session` object.
+  # Note how we use the `connection` handler, available to any engine, which 
+  # is in fact just a `Restfully::Session` object.
   # See the Restfully tutorial for more details.
   after :execute! do |env, *args|
     from = env[:job]['submitted_at']
@@ -126,15 +136,20 @@ end
 # Running your engines
 # ---------------------------
 
-# To execute this engine, you have two solutions. Either you copy the [source file](#section-2) on your machine, and then launch it as follows:
+# To execute this engine, you have two solutions. 
+# Either you copy the [source file](#section-2) on your machine, and then launch it as follows:
 #
 #     g5k-campaign -i path/to/file --gateway access.lille.grid5000.fr
 # 
 # or you directly pass the source file URI to `g5k-campaign` (but you can't make changes):
 # 
-#     g5k-campaign -i TODO
+#     g5k-campaign -i https://github.com/grid5000/tutorials\
+#     /raw/master/api/2.0/g5k-campaign-tutorial.rb \
+#     --gateway access.lille.grid5000.fr
 
 # Conclusion
 # ---------------------------
 
-# This concludes our tutorial, please see the [documentation](http://g5k-campaign.gforge.inria.fr/) and [examples](https://gforge.inria.fr/plugins/scmgit/cgi-bin/gitweb.cgi?p=g5k-campaign/g5k-campaign.git;a=tree;f=examples;hb=HEAD) for more advanced usages, including grid reservation, multiple deployments, notifications, etc.
+# This concludes our tutorial, please see the [documentation](http://g5k-campaign.gforge.inria.fr/) and
+# [examples](https://gforge.inria.fr/plugins/scmgit/cgi-bin/gitweb.cgi?p=g5k-campaign/g5k-campaign.git;a=tree;f=examples;hb=HEAD) for more advanced usages, 
+# including grid reservation, multiple deployments, notifications, etc.
