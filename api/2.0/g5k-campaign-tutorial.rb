@@ -176,7 +176,7 @@ class Grid < SimpleCustomEngine
   set :site, :all # :all or :rennes or [:rennes, :nancy] or...
 
   before :reserve! do |env, *args|
-    logger.info "I'm going to reserve all the nodes I can on #{site} sites!"
+    logger.info "Reserving nodes on #{site} sites..."
     env
   end
 
