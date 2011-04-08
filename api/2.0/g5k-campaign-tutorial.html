@@ -427,7 +427,7 @@ previous workflow on more than one site, here is a way to do it.</p>
   <span class="n">set</span> <span class="ss">:site</span><span class="p">,</span> <span class="ss">:all</span> <span class="c1"># :all or :rennes or [:rennes, :nancy] or...</span>
 
   <span class="n">before</span> <span class="ss">:reserve!</span> <span class="k">do</span> <span class="o">|</span><span class="n">env</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="o">|</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;I&#39;m going to reserve all the nodes I can on </span><span class="si">#{</span><span class="n">site</span><span class="si">}</span><span class="s2"> sites!&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;Reserving nodes on </span><span class="si">#{</span><span class="n">site</span><span class="si">}</span><span class="s2"> sites...&quot;</span>
     <span class="n">env</span>
   <span class="k">end</span></pre></div>
       </td>
