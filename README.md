@@ -3,6 +3,8 @@ In this repository you will find a few tutorials and example scripts that demons
 
 For example the `api` directory contains examples on how to interact with the Grid'5000 API, using various tools.
 
+You can go to <http://grid5000.github.com/tutorials> to see the HTML version of the raw source files. 
+
 ## How to contribute
 If you want to contribute a tutorial or example, or just make a change to an existing file, the standard way for you is to fork the project and send a pull request with your changes.
 
