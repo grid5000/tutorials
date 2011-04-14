@@ -110,7 +110,7 @@
 # What you just did was getting the description of the `rennes` site. 
 # The response is [JSON](http://json.org/) formatted (JSON is a lightweight data 
 # interchange format), and contains a list of `links` to related resources.
-curl -ki -u login:password https://api.grid5000.fr/2.0/grid5000/sites/rennes
+curl -ki -u login https://api.grid5000.fr/2.0/grid5000/sites/rennes
 
 # If you want to avoid entering your credentials for every request, `cURL` can 
 # use a configuration file (`~/.netrc`) to store them.
