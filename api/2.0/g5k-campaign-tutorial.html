@@ -472,8 +472,7 @@ can launch the reservation process on more than one site at a time.</p>
         <div class='highlight'><pre>      <span class="n">sites</span> <span class="o">=</span> <span class="o">[</span><span class="n">status</span><span class="o">.</span><span class="n">sort_by</span><span class="p">{</span><span class="o">|</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">|</span> <span class="n">v</span><span class="p">}</span><span class="o">.</span><span class="n">last</span><span class="o">[</span><span class="mi">0</span><span class="o">]]</span>
     <span class="k">else</span>
       <span class="n">sites</span> <span class="o">=</span> <span class="o">[</span><span class="n">env</span><span class="o">[</span><span class="ss">:site</span><span class="o">]].</span><span class="n">flatten</span>
-    <span class="k">end</span>
-    </pre></div>
+    <span class="k">end</span></pre></div>
       </td>
     </tr>
     <tr id='section-30'>
@@ -484,7 +483,7 @@ can launch the reservation process on more than one site at a time.</p>
         <p><code>g5k-campaign</code> comes with helper methods for parallel execution (see <a href="http://g5k-campaign.gforge.inria.fr/Grid5000/Campaign/Parallel.html">http://g5k-campaign.gforge.inria.fr/Grid5000/Campaign/Parallel.html</a>), whose usage is demonstrated here.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="n">env</span><span class="o">[</span><span class="ss">:parallel_reserve!</span><span class="o">]</span> <span class="o">=</span> <span class="n">parallel</span>
+        <div class='highlight'><pre>    <span class="n">env</span><span class="o">[</span><span class="ss">:parallel_reserve!</span><span class="o">]</span> <span class="o">=</span> <span class="n">parallel</span><span class="p">(</span><span class="ss">:ignore_thread_exceptions</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span>
     <span class="n">envs</span> <span class="o">=</span> <span class="o">[]</span>
 
     <span class="n">sites</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">uid</span><span class="o">|</span>
@@ -492,9 +491,9 @@ can launch the reservation process on more than one site at a time.</p>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="s2">&quot;Skipped </span><span class="si">#{</span><span class="n">uid</span><span class="si">}</span><span class="s2"> since it has only </span><span class="si">#{</span><span class="n">status</span><span class="o">[</span><span class="n">uid</span><span class="o">]</span><span class="si">}</span><span class="s2"> nodes that match our requirements.&quot;</span>
       <span class="k">else</span>
         <span class="n">new_env</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="ss">:site</span> <span class="o">=&gt;</span> <span class="n">uid</span><span class="p">)</span>
-        <span class="n">env</span><span class="o">[</span><span class="ss">:parallel_reserve!</span><span class="o">].</span><span class="n">add</span> <span class="p">{</span>
-          <span class="n">reserve!</span><span class="p">(</span><span class="n">new_env</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-        <span class="p">}</span>
+        <span class="n">env</span><span class="o">[</span><span class="ss">:parallel_reserve!</span><span class="o">].</span><span class="n">add</span><span class="p">(</span><span class="n">new_env</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">env</span><span class="o">|</span>
+          <span class="n">reserve!</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+        <span class="k">end</span>
         <span class="n">envs</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">new_env</span><span class="p">)</span>
       <span class="k">end</span>
     <span class="k">end</span></pre></div>
@@ -517,10 +516,11 @@ can launch the reservation process on more than one site at a time.</p>
           <a class="pilcrow" href="#section-32">&#182;</a>
         </div>
         <p>At the end of the whole workflow, automatically display the URL at which
-a grephical view of the metrics can be seen:</p>
+a graphical view of the metrics can be seen.
+Skip the sites where the reservation failed.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>    <span class="n">metrics_query</span> <span class="o">=</span> <span class="n">envs</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">e</span><span class="o">|</span>
+        <div class='highlight'><pre>    <span class="n">metrics_query</span> <span class="o">=</span> <span class="n">envs</span><span class="o">.</span><span class="n">reject</span><span class="p">{</span><span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="n">e</span><span class="o">[</span><span class="ss">:job</span><span class="o">].</span><span class="n">nil?</span><span class="p">}</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">e</span><span class="o">|</span>
       <span class="o">[</span><span class="n">e</span><span class="o">[</span><span class="ss">:site</span><span class="o">]</span><span class="p">,</span> <span class="n">e</span><span class="o">[</span><span class="ss">:job</span><span class="o">][</span><span class="s1">&#39;uid&#39;</span><span class="o">]].</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
     <span class="k">end</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
 
