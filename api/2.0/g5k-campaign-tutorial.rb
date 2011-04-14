@@ -180,7 +180,7 @@ class Grid < SimpleCustomEngine
     env
   end
 
-  # Here we change what is done by the default `:reserve!` hook, so that we 
+  # Here we change what is done by the default `:reserve!` hook, so that we
   # can launch the reservation process on more than one site at a time.
   on :reserve! do |env, block|
     # We make use of the `how_many?` helper function which returns the number of available nodes on each site (see <http://g5k-campaign.gforge.inria.fr/Grid5000/Campaign/Engine.html#how_many%3F-instance_method>).
@@ -196,9 +196,9 @@ class Grid < SimpleCustomEngine
     else
       sites = [env[:site]].flatten
     end
-    
+
     # `g5k-campaign` comes with helper methods for parallel execution (see <http://g5k-campaign.gforge.inria.fr/Grid5000/Campaign/Parallel.html>), whose usage is demonstrated here.
-    env[:parallel_reserve!] = parallel
+    env[:parallel_reserve!] = parallel(:ignore_thread_exceptions => true)
     envs = []
 
     sites.each do |uid|
@@ -206,9 +206,9 @@ class Grid < SimpleCustomEngine
         logger.info "Skipped #{uid} since it has only #{status[uid]} nodes that match our requirements."
       else
         new_env = env.merge(:site => uid)
-        env[:parallel_reserve!].add {
-          reserve!(new_env, &block)
-        }
+        env[:parallel_reserve!].add(new_env) do |env|
+          reserve!(env, &block)
+        end
         envs.push(new_env)
       end
     end
@@ -217,8 +217,9 @@ class Grid < SimpleCustomEngine
     env[:parallel_reserve!].loop!
 
     # At the end of the whole workflow, automatically display the URL at which
-    # a grephical view of the metrics can be seen:
-    metrics_query = envs.map do |e|
+    # a graphical view of the metrics can be seen.
+    # Skip the sites where the reservation failed.
+    metrics_query = envs.reject{|e| e[:job].nil?}.map do |e|
       [e[:site], e[:job]['uid']].join(":")
     end.join(",")
 
