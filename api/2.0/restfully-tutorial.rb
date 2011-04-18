@@ -34,8 +34,8 @@ LOGGER.level = Logger::INFO
 #     mkdir ~/.restfully
 #     cat <<EOF > ~/.restfully/api.grid5000.fr.yml
 #     base_uri: https://api.grid5000.fr/2.0/grid5000
-#     username: your-grid5000-login
-#     password: your-grid5000-password
+#     username: "your-grid5000-login"
+#     password: "your-grid5000-password"
 #     EOF
 #     chmod 600 ~/.restfully/api.grid5000.fr.yml
 #

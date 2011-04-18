@@ -15,8 +15,9 @@
 # Let's do some cURLing
 # ---------------------------
 
-# Test that you can access the Grid'5000 API. Replace `login` and `password`
-# with their respective value (your Grid'5000 credentials).
+# Test that you can access the Grid'5000 API. Replace `login`
+# with your Grid'5000 login. Your Grid'5000 password will be requested when
+# you hit `enter`.
 # The output of the command should be:
 #
 #     HTTP/1.1 200 OK
@@ -108,8 +109,9 @@
 #     }
 #
 # What you just did was getting the description of the `rennes` site. 
-# The response is [JSON](http://json.org/) formatted (JSON is a lightweight data 
-# interchange format), and contains a list of `links` to related resources.
+# The response is [JSON](http://json.org/) formatted (JSON is a lightweight 
+# data interchange format), and contains a list of `links` to related
+# resources.
 curl -ki -u login https://api.grid5000.fr/2.0/grid5000/sites/rennes
 
 # If you want to avoid entering your credentials for every request, `cURL` can 
@@ -125,8 +127,23 @@ chmod 600 ~/.netrc
 # Retry the previous request with the `-n` flag, and you should get the same result.
 curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes
 
-# Now, as an example, you can fetch the list of scheduled jobs on the `rennes` site by issuing a request to the following URI.
-# Note that you can remove the `-i` flag if you do not want to display the HTTP headers from the response.
+# If you want to see the full details of how the HTTP request is made, add the 
+# `-v` flag to the command (lines prefixed with `>` and `<` repectively show 
+# what is sent to, and received from the server):
+curl -kvni https://api.grid5000.fr/2.0/grid5000/sites/rennes
+
+# Looking at the list of `links` in the description of the `rennes` site, 
+# you can see that there is a lot of other URIs that can be followed.
+# As an example, you can retrieve the site status with the following command.
+# For each node, you'll see the node state and the next reservation.
+# You can have a look at the [Monitoring API documentation](https://api.grid5000.fr/2.0/status/help/index.html) 
+# for more information.
+curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes/status
+
+# You can also fetch the list of scheduled jobs on the `rennes` site by 
+# issuing a request to the following URI.
+# Note that you can remove the `-i` flag if you do not want to display the
+# HTTP headers from the response.
 curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes/jobs
 
 # At this point, you may want to add your very own job to the previous list.
@@ -158,6 +175,9 @@ curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes/jobs
 #
 curl -kni -X POST https://api.grid5000.fr/2.0/grid5000/sites/rennes/jobs \
 -d 'command=sleep 1800'
+
+# Have a look at the [Jobs API documentation](https://api.grid5000.fr/2.0/jobs/help/index.html)
+# to see the full list of available parameters and usage.
 
 # Notice the `201 Created` status code and the `Location` HTTP header in the previous response. 
 # The latter indicates where the full job description can be fetched. 
