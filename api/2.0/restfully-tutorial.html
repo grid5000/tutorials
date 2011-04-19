@@ -46,8 +46,31 @@
 environment on every site of Grid'5000 (granted there are nodes available),
 using the <a href="http://github.com/grid5000/restfully">Restfully</a> Ruby library.</p>
 
-<p>You can download the source file for this tutorial from here: <a href="https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb">https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb</a>.
-And run it with:</p>
+<p>You can download the source file for this tutorial from here: <a href="https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb">https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb</a>.</p>
+
+<p>As <code>cURL</code>, <code>Restfully</code> can use a configuration file so that you don&rsquo;t need
+to enter your credentials by hand.
+Copy-paste the following in a terminal:</p>
+
+<pre><code>mkdir ~/.restfully
+cat &lt;&lt;EOF &gt; ~/.restfully/api.grid5000.fr.yml
+base_uri: https://api.grid5000.fr/2.0/grid5000
+username: "your-grid5000-login"
+password: "your-grid5000-password"
+EOF
+chmod 600 ~/.restfully/api.grid5000.fr.yml
+</code></pre>
+
+<p>Then edit the <code>~/.restfully/api.grid5000.fr.yml</code> file to enter the correct
+information for <code>username</code> and <code>password</code>.</p>
+
+<p>Once you&rsquo;ve done that, you need to install the following Ruby gems:</p>
+
+<pre><code>gem install restfully net-ssh-gateway
+</code></pre>
+
+<p>And you should be ready to go! From your local machine, you can run the
+script with:</p>
 
 <pre><code>curl -k https://github.com/grid5000/tutorials/raw/master/\
 api/2.0/restfully-tutorial.rb | ruby
@@ -78,7 +101,7 @@ api/2.0/restfully-tutorial.rb | ruby
         <div class="pilwrap">
           <a class="pilcrow" href="#section-4">&#182;</a>
         </div>
-        <p>You need to install a few libraries for this script to work:</p>
+        <p>Here are the libraries that this script uses:</p>
       </td>
       <td class=code>
         <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;rubygems&#39;</span>        <span class="c1"># or: export RUBYOPT=&quot;-rubygems&quot;</span>
@@ -116,17 +139,7 @@ api/2.0/restfully-tutorial.rb | ruby
         <div class="pilwrap">
           <a class="pilcrow" href="#section-7">&#182;</a>
         </div>
-        <p>Load the Restfully configuration file that contains your API credentials.
-Create the file if it does not exist:</p>
-
-<pre><code>mkdir ~/.restfully
-cat &lt;&lt;EOF &gt; ~/.restfully/api.grid5000.fr.yml
-base_uri: https://api.grid5000.fr/2.0/grid5000
-username: "your-grid5000-login"
-password: "your-grid5000-password"
-EOF
-chmod 600 ~/.restfully/api.grid5000.fr.yml
-</code></pre>
+        <p>Load the Restfully configuration file that contains your API credentials.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre><span class="no">CONFIG</span> <span class="o">=</span> <span class="no">YAML</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="no">File</span><span class="o">.</span><span class="n">expand_path</span><span class="p">(</span><span class="s2">&quot;~/.restfully/api.grid5000.fr.yml&quot;</span><span class="p">))</span></pre></div>
