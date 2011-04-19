@@ -3,7 +3,7 @@
 # This tutorial will show you how to use the [g5k-campaign](http://g5k-campaign.gforge.inria.fr)
 # tool to easily build a whole experiment workflow.
 #
-# This tool is built on the [Restfully](http://github.com/restfully) library,
+# This tool is built on the [Restfully](http://github.com/grid5000/restfully) library,
 # and provide a higher level of abstraction, with support for parallel
 # execution of reservations, deployments, and resource configuration.
 #

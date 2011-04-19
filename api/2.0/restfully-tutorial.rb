@@ -5,6 +5,10 @@
 # using the [Restfully](http://github.com/grid5000/restfully) Ruby library.
 #
 # You can download the source file for this tutorial from here: <https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb>.
+# And run it with:
+# 
+#     curl -k https://github.com/grid5000/tutorials/raw/master/\
+#     api/2.0/restfully-tutorial.rb | ruby
 #
 # Note that you can also use Restfully in an interactive manner:
 # 
