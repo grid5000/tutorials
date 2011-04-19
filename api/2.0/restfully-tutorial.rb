@@ -5,8 +5,29 @@
 # using the [Restfully](http://github.com/grid5000/restfully) Ruby library.
 #
 # You can download the source file for this tutorial from here: <https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb>.
-# And run it with:
+#
+# As `cURL`, `Restfully` can use a configuration file so that you don't need
+# to enter your credentials by hand. 
+# Copy-paste the following in a terminal:
+#
+#     mkdir ~/.restfully
+#     cat <<EOF > ~/.restfully/api.grid5000.fr.yml
+#     base_uri: https://api.grid5000.fr/2.0/grid5000
+#     username: "your-grid5000-login"
+#     password: "your-grid5000-password"
+#     EOF
+#     chmod 600 ~/.restfully/api.grid5000.fr.yml
 # 
+# Then edit the `~/.restfully/api.grid5000.fr.yml` file to enter the correct
+# information for `username` and `password`.
+#
+# Once you've done that, you need to install the following Ruby gems:
+#
+#     gem install restfully net-ssh-gateway
+#
+# And you should be ready to go! From your local machine, you can run the 
+# script with:
+#
 #     curl -k https://github.com/grid5000/tutorials/raw/master/\
 #     api/2.0/restfully-tutorial.rb | ruby
 #
@@ -18,7 +39,7 @@
 # Prerequisites
 # ---------------------------
 
-# You need to install a few libraries for this script to work:
+# Here are the libraries that this script uses:
 require 'rubygems'        # or: export RUBYOPT="-rubygems"
 require 'restfully'       # gem install restfully
 require 'net/ssh/gateway' # gem install net-ssh-gateway
@@ -33,16 +54,6 @@ LOGGER       = Logger.new(STDERR)
 LOGGER.level = Logger::INFO
 
 # Load the Restfully configuration file that contains your API credentials.
-# Create the file if it does not exist:
-#
-#     mkdir ~/.restfully
-#     cat <<EOF > ~/.restfully/api.grid5000.fr.yml
-#     base_uri: https://api.grid5000.fr/2.0/grid5000
-#     username: "your-grid5000-login"
-#     password: "your-grid5000-password"
-#     EOF
-#     chmod 600 ~/.restfully/api.grid5000.fr.yml
-#
 CONFIG = YAML.load_file(File.expand_path("~/.restfully/api.grid5000.fr.yml"))
 
 # Attempts to find a public SSH key in your home directory.
