@@ -15,7 +15,7 @@
 # ---------------------------
 
 # You need to install the `g5k-campaign` library. Assuming you have `Ruby` and
-# `rubygems` (1.3.6+) already installed on your system, this can be done with:
+# `rubygems` (1.3.5+) already installed on your system, this can be done with:
 #
 #     gem install g5k-campaign \
 #     --source http://g5k-campaign.gforge.inria.fr/pkg
@@ -32,7 +32,7 @@
 #
 # Note that you must have an SSH key installed on your machine, with the 
 # public part of that key in the authorized keys of the
-# access.lille.grid5000.fr machine.
+# `access.lille.grid5000.fr` machine.
 # If this is not the case, follow the first steps as described at <http://pkeck.myweb.uga.edu/ssh/>, or in the [Grid'5000 wiki](https://www.grid5000.fr/mediawiki/index.php/SSH).
 
 # Building your own engine
@@ -113,7 +113,8 @@ class SimpleCustomEngine < Grid5000::Campaign::Engine
   end
 
   # The following is just an example of what we can do once everything is setup and running.
-  # Here we'll just poll the values for two timeseries (our custom metric and `cpu_idle`).
+  # Here we'll just poll the values for two timeseries (our custom metric and `cpu_idle`). 
+  # We use the [Metrology API](https://api.grid5000.fr/2.0/metrics/help/index.html) for that.
   after :execute! do |env, *args|
     from = env[:job]['submitted_at']
     resolution = 15
@@ -122,10 +123,10 @@ class SimpleCustomEngine < Grid5000::Campaign::Engine
       ["custom_metric_#{env[:user]}", "cpu_idle"].each do |metric|
         begin
           logger.info "[#{env[:site]}] Fetching timeseries for #{metric} metric..."
-          # Here we use the `connection` handler, available to any engine,
-          # to connect to the API.
+          # In all engines you have access to a `connection` handler, which is 
+          # a `Restfully::Session` object that you can use to access the
+          # Grid'5000 API.
           #
-          # In fact this is just a `Restfully::Session` object.
           # See the Restfully tutorial for more details.
           connection.root.sites[env[:site].to_sym].metrics[metric.to_sym].
           timeseries(
