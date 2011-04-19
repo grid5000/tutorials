@@ -30,6 +30,10 @@
 # * submit a 1-hour job on one node of the `rennes` site, and
 # * deploy the `lenny-x64-base` environment on the reserved node.
 #
+# Note that you must have an SSH key installed on your machine, with the 
+# public part of that key in the authorized keys of the
+# access.lille.grid5000.fr machine.
+# If this is not the case, follow the first steps as described at <http://pkeck.myweb.uga.edu/ssh/>, or in the [Grid'5000 wiki](https://www.grid5000.fr/mediawiki/index.php/SSH).
 
 # Building your own engine
 # ---------------------------
