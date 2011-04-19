@@ -35,6 +35,7 @@
 # 
 #     restfully -c ~/.restfully/api.grid5000.fr.yml
 #
+# Below you will find the annotated source code for the script.
 
 # Prerequisites
 # ---------------------------
