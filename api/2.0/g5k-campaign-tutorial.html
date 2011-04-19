@@ -73,7 +73,7 @@ execution of reservations, deployments, and resource configuration.</p>
           <a class="pilcrow" href="#section-4">&#182;</a>
         </div>
         <p>You need to install the <code>g5k-campaign</code> library. Assuming you have <code>Ruby</code> and
-<code>rubygems</code> (1.3.6+) already installed on your system, this can be done with:</p>
+<code>rubygems</code> (1.3.5+) already installed on your system, this can be done with:</p>
 
 <pre><code>gem install g5k-campaign \
 --source http://g5k-campaign.gforge.inria.fr/pkg
@@ -95,7 +95,7 @@ You can get a better feel of what it can do by displaying the usage help:</p>
 
 <p>Note that you must have an SSH key installed on your machine, with the
 public part of that key in the authorized keys of the
-access.lille.grid5000.fr machine.
+<code>access.lille.grid5000.fr</code> machine.
 If this is not the case, follow the first steps as described at <a href="http://pkeck.myweb.uga.edu/ssh/">http://pkeck.myweb.uga.edu/ssh/</a>, or in the <a href="https://www.grid5000.fr/mediawiki/index.php/SSH">Grid'5000 wiki</a>.</p>
       </td>
       <td class=code>
@@ -311,7 +311,8 @@ See <a href="http://net-ssh.github.com/multi/v1/api/index.html">http://net-ssh.g
           <a class="pilcrow" href="#section-20">&#182;</a>
         </div>
         <p>The following is just an example of what we can do once everything is setup and running.
-Here we&rsquo;ll just poll the values for two timeseries (our custom metric and <code>cpu_idle</code>).</p>
+Here we&rsquo;ll just poll the values for two timeseries (our custom metric and <code>cpu_idle</code>).
+We use the <a href="https://api.grid5000.fr/2.0/metrics/help/index.html">Metrology API</a> for that.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="n">after</span> <span class="ss">:execute!</span> <span class="k">do</span> <span class="o">|</span><span class="n">env</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="o">|</span>
@@ -329,11 +330,11 @@ Here we&rsquo;ll just poll the values for two timeseries (our custom metric and 
         <div class="pilwrap">
           <a class="pilcrow" href="#section-21">&#182;</a>
         </div>
-        <p>Here we use the <code>connection</code> handler, available to any engine,
-to connect to the API.</p>
+        <p>In all engines you have access to a <code>connection</code> handler, which is
+a <code>Restfully::Session</code> object that you can use to access the
+Grid'5000 API.</p>
 
-<p>In fact this is just a <code>Restfully::Session</code> object.
-See the Restfully tutorial for more details.</p>
+<p>See the Restfully tutorial for more details.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>          <span class="n">connection</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">sites</span><span class="o">[</span><span class="n">env</span><span class="o">[</span><span class="ss">:site</span><span class="o">].</span><span class="n">to_sym</span><span class="o">].</span><span class="n">metrics</span><span class="o">[</span><span class="n">metric</span><span class="o">.</span><span class="n">to_sym</span><span class="o">].</span>
