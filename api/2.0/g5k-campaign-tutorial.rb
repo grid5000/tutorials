@@ -48,6 +48,8 @@ class SimpleCustomEngine < Grid5000::Campaign::Engine
   set :environment, "lenny-x64-base"
   set :resources, "nodes=2"
   set :walltime, 7200
+  set :site, "nancy"
+
   # By default, all the reserved nodes are released when the engine terminates.
   # Here we want to keep the nodes available after the end of the workflow, so that we can still use them.
   set :no_cleanup, true
