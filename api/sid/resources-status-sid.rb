@@ -6,20 +6,23 @@ require 'yaml'
 require 'time'
 
 # The config file should contain your login, password and base_uri of the API:
-# grid5000:
-#   username: LOGIN
-#   password: PASSWORD
-#   base_uri: https://api.grid5000.fr/sid
+#
+#     grid5000:
+#       username: LOGIN
+#       password: PASSWORD
+#       base_uri: https://api.grid5000.fr/sid
+#
 CONFIG = YAML.load_file(File.expand_path("~/.restclient"))['grid5000']
 
-# Initialize variables (sites, walltime, start_timeetc.)
+# Initialize variables (sites, walltime, start_time, etc.)
 sites = [{:name => :rennes}, {:name => :nancy}]
 walltime = 3600
 
 # The start time should be in epoch time. You can use any format parsable by ruby.
-# - Time.now.to_i
-# - Time.parse("YYYY/MM/DD HH/mm/SS")
-# - etc.
+#
+#   - Time.now.to_i
+#   - Time.parse("YYYY/MM/DD HH/mm/SS")
+#   - etc.
 start_time = Time.now.to_i
 stop_time = start_time + walltime
 
