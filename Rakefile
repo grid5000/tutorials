@@ -15,7 +15,7 @@ namespace :build do
   desc "Build the HTML files for the API tutorials."
   task :api => :setup do
     Dir.chdir(ROOT_DIR) do
-      sh "rocco #{File.join("api", "**", "*.{sh,rb}")} -o #{BUILD_DIR}"
+      sh "rocco #{File.join("api", "**", "*.sh")} #{File.join("api", "**", "*.rb")} -o #{BUILD_DIR}"
     end
   end
 end
