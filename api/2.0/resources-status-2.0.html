@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>resources-status-2.0.rb</title>
+  <link rel="stylesheet" href="http://jashkenas.github.com/docco/resources/docco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div id="jump_to">
+    Jump To &hellip;
+    <div id="jump_wrapper">
+      <div id="jump_page">
+          <a class="source" href="curl-tutorial.html">curl-tutorial.sh</a>
+          <a class="source" href="g5k-campaign-tutorial.html">g5k-campaign-tutorial.rb</a>
+          <a class="source" href="resources-status-2.0.html">resources-status-2.0.rb</a>
+          <a class="source" href="restfully-tutorial.html">restfully-tutorial.rb</a>
+          <a class="source" href="../sid/resources-status-sid.html">resources-status-sid.rb</a>
+      </div>
+    </div>
+  </div>
+  <table cellspacing=0 cellpadding=0>
+  <thead>
+    <tr>
+      <th class=docs><h1>resources-status-2.0.rb</h1></th>
+      <th class=code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr id='section-1'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-1">&#182;</a>
+        </div>
+        
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="nb">require</span> <span class="s1">&#39;optparse&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;restfully&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;yaml&#39;</span>
+<span class="nb">require</span> <span class="s1">&#39;time&#39;</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-2'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-2">&#182;</a>
+        </div>
+        <p>The config file should contain your login, password and base_uri of the API:</p>
+
+<pre><code>grid5000:
+  username: LOGIN
+  password: PASSWORD
+  base_uri: https://api.grid5000.fr/2.0/grid5000
+</code></pre>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="no">CONFIG</span> <span class="o">=</span> <span class="no">YAML</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="no">File</span><span class="o">.</span><span class="n">expand_path</span><span class="p">(</span><span class="s2">&quot;~/.restclient&quot;</span><span class="p">))</span><span class="o">[</span><span class="s1">&#39;grid5000&#39;</span><span class="o">]</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-3'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-3">&#182;</a>
+        </div>
+        <p>Initialize variables (sites, walltime, start_time, etc.)</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">sites</span> <span class="o">=</span> <span class="o">[</span><span class="p">{</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="ss">:rennes</span><span class="p">},</span> <span class="p">{</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="ss">:nancy</span><span class="p">}</span><span class="o">]</span>
+<span class="n">walltime</span> <span class="o">=</span> <span class="mi">3600</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-4'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-4">&#182;</a>
+        </div>
+        <p>The start time should be in epoch time. You can use any format parsable by ruby.
+&ndash; Time.now.to_i
+&ndash; Time.parse(&ldquo;YYYY/MM/DD HH/mm/SS&rdquo;)
+&ndash; etc.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">start_time</span> <span class="o">=</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">to_i</span>
+<span class="n">stop_time</span> <span class="o">=</span> <span class="n">start_time</span> <span class="o">+</span> <span class="n">walltime</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-5'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-5">&#182;</a>
+        </div>
+        <p>Ignore best effort jobs and check that there is no job between start and stop date</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">def</span> <span class="nf">filter_reservations</span><span class="p">(</span><span class="n">reservations</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span>
+  <span class="n">reservations</span><span class="o">.</span><span class="n">select</span> <span class="k">do</span> <span class="o">|</span><span class="n">r</span><span class="o">|</span>
+    <span class="n">r</span><span class="o">[</span><span class="s1">&#39;start_time&#39;</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">stop_time</span> <span class="o">&amp;&amp;</span> <span class="n">r</span><span class="o">[</span><span class="s1">&#39;start_time&#39;</span><span class="o">]</span> <span class="o">+</span> <span class="n">r</span><span class="o">[</span><span class="s1">&#39;walltime&#39;</span><span class="o">]</span> <span class="o">&gt;</span> <span class="n">start_time</span> <span class="o">&amp;&amp;</span> <span class="n">r</span><span class="o">[</span><span class="s1">&#39;queue&#39;</span><span class="o">]</span> <span class="o">!=</span> <span class="s1">&#39;besteffort&#39;</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">Restfully</span><span class="o">::</span><span class="no">Session</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+  <span class="ss">:username</span> <span class="o">=&gt;</span> <span class="no">CONFIG</span><span class="o">[</span><span class="s1">&#39;username&#39;</span><span class="o">]</span><span class="p">,</span>
+  <span class="ss">:password</span> <span class="o">=&gt;</span> <span class="no">CONFIG</span><span class="o">[</span><span class="s1">&#39;password&#39;</span><span class="o">]</span><span class="p">,</span>
+  <span class="ss">:base_uri</span> <span class="o">=&gt;</span> <span class="no">CONFIG</span><span class="o">[</span><span class="s1">&#39;base_uri&#39;</span><span class="o">]</span>
+<span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">grid</span><span class="p">,</span> <span class="n">session</span><span class="o">|</span>
+  <span class="n">sites</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">site</span><span class="o">|</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-6'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-6">&#182;</a>
+        </div>
+        <p>Initialize the list of nodes that will save the status of the nodes</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">site</span><span class="o">[</span><span class="ss">:all_nodes</span><span class="o">]</span> <span class="o">=</span> <span class="o">[]</span>
+    <span class="n">site</span><span class="o">[</span><span class="ss">:dead_nodes</span><span class="o">]</span> <span class="o">=</span> <span class="o">[]</span>
+    <span class="n">site</span><span class="o">[</span><span class="ss">:avail_nodes</span><span class="o">]</span> <span class="o">=</span> <span class="o">[]</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-7'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-7">&#182;</a>
+        </div>
+        <p>Get the state of of nodes of each site (ask to get 100 reservations per node, default is very low)</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">grid</span><span class="o">.</span><span class="n">sites</span><span class="o">[</span><span class="n">site</span><span class="o">[</span><span class="ss">:name</span><span class="o">]].</span><span class="n">status</span><span class="p">(</span><span class="ss">:query</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="ss">:reservations_limit</span> <span class="o">=&gt;</span> <span class="s1">&#39;100&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">node</span><span class="o">|</span>
+      <span class="n">site</span><span class="o">[</span><span class="ss">:all_nodes</span><span class="o">]</span> <span class="o">&lt;&lt;</span> <span class="n">node</span>
+      <span class="n">site</span><span class="o">[</span><span class="ss">:dead_nodes</span><span class="o">]</span> <span class="o">&lt;&lt;</span> <span class="n">node</span>   <span class="k">if</span> <span class="n">node</span><span class="o">[</span><span class="s1">&#39;hardware_state&#39;</span><span class="o">]</span> <span class="o">==</span> <span class="s1">&#39;dead&#39;</span>
+      <span class="n">site</span><span class="o">[</span><span class="ss">:avail_nodes</span><span class="o">]</span> <span class="o">&lt;&lt;</span> <span class="n">node</span>  <span class="k">if</span> <span class="n">filter_reservations</span><span class="p">(</span><span class="n">node</span><span class="o">[</span><span class="s1">&#39;reservations&#39;</span><span class="o">]</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span><span class="o">.</span><span class="n">empty?</span> <span class="o">&amp;&amp;</span> <span class="n">node</span><span class="o">[</span><span class="s1">&#39;hardware_state&#39;</span><span class="o">]</span> <span class="o">!=</span> <span class="s1">&#39;dead&#39;</span>
+    <span class="k">end</span>
+
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-8'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-8">&#182;</a>
+        </div>
+        <p>Display the results</p>
+
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">sites</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">site</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">site</span><span class="o">[</span><span class="ss">:name</span><span class="o">]</span><span class="si">}</span><span class="s2">:</span>
+<span class="s2">  nodes: (max/dead/fully_avail): </span><span class="si">#{</span><span class="n">site</span><span class="o">[</span><span class="ss">:all_nodes</span><span class="o">].</span><span class="n">length</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">site</span><span class="o">[</span><span class="ss">:dead_nodes</span><span class="o">].</span><span class="n">length</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">site</span><span class="o">[</span><span class="ss">:avail_nodes</span><span class="o">].</span><span class="n">length</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
