@@ -28,7 +28,7 @@
 # And you should be ready to go! From your local machine, you can run the 
 # script with:
 #
-#     curl -k https://github.com/grid5000/tutorials/raw/master/\
+#     curl -k https://raw.github.com/grid5000/tutorials/master/\
 #     api/2.0/restfully-tutorial.rb | ruby
 #
 # Note that you can also use Restfully in an interactive manner:
@@ -69,7 +69,10 @@ LOGGER.info "Using the SSH public key located at: #{PUBLIC_KEY.inspect}"
 
 # Create an SSH gateway to access the Grid'5000 machines from outside.
 # Note that this is not needed if you operate from a Grid'5000 frontend.
-GATEWAY      = Net::SSH::Gateway.new('access.lille.grid5000.fr', CONFIG["username"])
+GATEWAY      = Net::SSH::Gateway.new('access.grid5000.fr', CONFIG["username"])
+
+# If SSH keys are not properly configured, you could use your password.
+#  GATEWAY   = Net::SSH::Gateway.new('access.grid5000.fr', CONFIG["username"], :password => 'mdp')
 
 # Structures to keep track of the jobs and deployments we submit.
 JOBS         = []
