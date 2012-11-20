@@ -192,18 +192,6 @@ Note that this is not needed if you operate from a Grid'5000 frontend.</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-11">&#182;</a>
         </div>
-        <p>You could choice to use access-north
- GATEWAY   = Net::SSH::Gateway.new(&lsquo;access-north.grid5000.fr&rsquo;, CONFIG[&ldquo;username&rdquo;], :keys => &ldquo;#{PRIVATE_KEY}&rdquo;)</p>
-      </td>
-      <td class=code>
-        <div class='highlight'><pre></pre></div>
-      </td>
-    </tr>
-    <tr id='section-12'>
-      <td class=docs>
-        <div class="pilwrap">
-          <a class="pilcrow" href="#section-12">&#182;</a>
-        </div>
         <p>Structures to keep track of the jobs and deployments we submit.</p>
       </td>
       <td class=code>
@@ -211,10 +199,10 @@ Note that this is not needed if you operate from a Grid'5000 frontend.</p>
 <span class="no">DEPLOYMENTS</span>  <span class="o">=</span> <span class="o">[]</span></pre></div>
       </td>
     </tr>
-    <tr id='section-13'>
+    <tr id='section-12'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-13">&#182;</a>
+          <a class="pilcrow" href="#section-12">&#182;</a>
         </div>
         <p>We don&rsquo;t want to wait forever, right?</p>
       </td>
@@ -223,10 +211,10 @@ Note that this is not needed if you operate from a Grid'5000 frontend.</p>
 <span class="no">TIMEOUT_DEPLOYMENT</span> <span class="o">=</span> <span class="mi">15</span><span class="o">*</span><span class="mi">60</span> <span class="c1"># 15 minutes</span></pre></div>
       </td>
     </tr>
-    <tr id='section-14'>
+    <tr id='section-13'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-14">&#182;</a>
+          <a class="pilcrow" href="#section-13">&#182;</a>
         </div>
         <p>The command to run on each node after they are deployed:</p>
       </td>
@@ -234,10 +222,10 @@ Note that this is not needed if you operate from a Grid'5000 frontend.</p>
         <div class='highlight'><pre><span class="no">COMMAND</span> <span class="o">=</span> <span class="s2">&quot;hostname&quot;</span></pre></div>
       </td>
     </tr>
-    <tr id='section-15'>
+    <tr id='section-14'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-15">&#182;</a>
+          <a class="pilcrow" href="#section-14">&#182;</a>
         </div>
         <p>Be a good citizen and delete everything when an error or interruption occurs:</p>
       </td>
@@ -249,10 +237,10 @@ Note that this is not needed if you operate from a Grid'5000 frontend.</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-16'>
+    <tr id='section-15'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-16">&#182;</a>
+          <a class="pilcrow" href="#section-15">&#182;</a>
         </div>
         <p>Cleanup everything upon receiving SIGINT or SIGTERM:</p>
       </td>
@@ -276,10 +264,10 @@ Note that this is not needed if you operate from a Grid'5000 frontend.</p>
         <div class='highlight'><pre><span class="k">begin</span></pre></div>
       </td>
     </tr>
-    <tr id='section-18'>
+    <tr id='section-17'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-18">&#182;</a>
+          <a class="pilcrow" href="#section-17">&#182;</a>
         </div>
         <p>Open a session to the API:</p>
       </td>
@@ -292,10 +280,10 @@ Note that this is not needed if you operate from a Grid'5000 frontend.</p>
   <span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">root</span><span class="p">,</span> <span class="n">session</span><span class="o">|</span></pre></div>
       </td>
     </tr>
-    <tr id='section-19'>
+    <tr id='section-18'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-19">&#182;</a>
+          <a class="pilcrow" href="#section-18">&#182;</a>
         </div>
         <p>Loop over each Grid'5000 site and attempts to reserve nodes:</p>
       </td>
@@ -303,10 +291,10 @@ Note that this is not needed if you operate from a Grid'5000 frontend.</p>
         <div class='highlight'><pre>    <span class="n">root</span><span class="o">.</span><span class="n">sites</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">site</span><span class="o">|</span></pre></div>
       </td>
     </tr>
-    <tr id='section-20'>
+    <tr id='section-19'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-20">&#182;</a>
+          <a class="pilcrow" href="#section-19">&#182;</a>
         </div>
         <p>For each Grid'5000 site, fetch its status
 and submit a job if there is at least one node available.</p>
@@ -317,10 +305,10 @@ and submit a job if there is at least one node available.</p>
       <span class="p">}</span> <span class="k">then</span></pre></div>
       </td>
     </tr>
-    <tr id='section-21'>
+    <tr id='section-20'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-21">&#182;</a>
+          <a class="pilcrow" href="#section-20">&#182;</a>
         </div>
         <p>The OAR scheduler expects a program to be run.
 In our case we will deploy our own environment
@@ -346,10 +334,10 @@ therefore we just tell him to sleep for the duration of the job.</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-22'>
+    <tr id='section-21'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-22">&#182;</a>
+          <a class="pilcrow" href="#section-21">&#182;</a>
         </div>
         <p>Once all the jobs have been submitted, we wait until all are running.</p>
       </td>
@@ -368,10 +356,10 @@ therefore we just tell him to sleep for the duration of the job.</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-23'>
+    <tr id='section-22'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-23">&#182;</a>
+          <a class="pilcrow" href="#section-22">&#182;</a>
         </div>
         <p>Deploy a specific image on all of our reserved nodes</p>
       </td>
@@ -387,10 +375,10 @@ therefore we just tell him to sleep for the duration of the job.</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-24'>
+    <tr id='section-23'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-24">&#182;</a>
+          <a class="pilcrow" href="#section-23">&#182;</a>
         </div>
         <p>Exit if no deployments</p>
       </td>
@@ -402,10 +390,10 @@ therefore we just tell him to sleep for the duration of the job.</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-25'>
+    <tr id='section-24'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-25">&#182;</a>
+          <a class="pilcrow" href="#section-24">&#182;</a>
         </div>
         <p>Wait until all deployments are no longer processing.</p>
       </td>
@@ -424,10 +412,10 @@ therefore we just tell him to sleep for the duration of the job.</p>
     <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-26'>
+    <tr id='section-25'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-26">&#182;</a>
+          <a class="pilcrow" href="#section-25">&#182;</a>
         </div>
         <p>Connect to all our nodes an execute a command on each one:</p>
       </td>
@@ -436,10 +424,10 @@ therefore we just tell him to sleep for the duration of the job.</p>
       <span class="k">next</span> <span class="k">if</span> <span class="n">deployment</span><span class="o">.</span><span class="n">reload</span><span class="o">[</span><span class="s1">&#39;status&#39;</span><span class="o">]</span> <span class="o">!=</span> <span class="s1">&#39;terminated&#39;</span></pre></div>
       </td>
     </tr>
-    <tr id='section-27'>
+    <tr id='section-26'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-27">&#182;</a>
+          <a class="pilcrow" href="#section-26">&#182;</a>
         </div>
         <p>Connect as <code>root</code> to the nodes, via the specified gateway.
 What follows is a naive approach that works for small numbers of nodes.</p>
@@ -458,10 +446,10 @@ What follows is a naive approach that works for small numbers of nodes.</p>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-28'>
+    <tr id='section-27'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-28">&#182;</a>
+          <a class="pilcrow" href="#section-27">&#182;</a>
         </div>
         <p>Rescue and display any exception that could be raised:</p>
 
