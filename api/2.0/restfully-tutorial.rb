@@ -69,11 +69,9 @@ LOGGER.info "Using the SSH public key located at: #{PUBLIC_KEY.inspect}"
 
 # Create an SSH gateway to access the Grid'5000 machines from outside.
 # Note that this is not needed if you operate from a Grid'5000 frontend.
-GATEWAY      = Net::SSH::Gateway.new('access.grid5000.fr', CONFIG["username"])
+GATEWAY      = Net::SSH::Gateway.new('access.grid5000.fr', CONFIG["username"], :keys => "#{PRIVATE_KEY}")
 
-# If SSH keys are not properly configured, you could use your password.
-#  GATEWAY   = Net::SSH::Gateway.new('access.grid5000.fr', CONFIG["username"], :password => 'mdp')
-
+# 
 # Structures to keep track of the jobs and deployments we submit.
 JOBS         = []
 DEPLOYMENTS  = []
