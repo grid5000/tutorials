@@ -1,10 +1,13 @@
 #!/usr/bin/env ruby
 
-require 'optparse'
+# This tutorial will show you how to discover the state of the resources with restfully.
+# You can download the source file for this tutorial from here: https://github.com/grid5000/tutorials/blob/master/api/2.0/resources-status-2.0.rb
+#
 require 'restfully'
 require 'yaml'
 require 'time'
 
+#
 # The config file should contain your login, password and base_uri of the API:
 #
 #     grid5000:
@@ -13,7 +16,12 @@ require 'time'
 #       base_uri: https://api.grid5000.fr/2.0/grid5000
 #
 CONFIG = YAML.load_file(File.expand_path("~/.restclient"))['grid5000']
-
+#
+# From your local machine, you can run the script with:
+#
+#     curl -k https://raw.github.com/grid5000/tutorials/master/\
+#     api/2.0/resources-status-2.0.rb|ruby
+#
 # Initialize variables (sites, walltime, start_time, etc.)
 sites = [{:name => :rennes}, {:name => :nancy}]
 walltime = 3600

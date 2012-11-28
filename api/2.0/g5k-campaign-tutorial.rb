@@ -32,7 +32,7 @@
 #
 # Note that you must have an SSH key installed on your machine, with the 
 # public part of that key in the authorized keys of the
-# `access.lille.grid5000.fr` machine.
+# `access.grid5000.fr` machine.
 # If this is not the case, follow the first steps as described at <http://pkeck.myweb.uga.edu/ssh/>, or in the [Grid'5000 wiki](https://www.grid5000.fr/mediawiki/index.php/SSH).
 
 # Building your own engine
@@ -155,16 +155,18 @@ end
 # ---------------------------
 
 # To execute this engine, you have two solutions.
-# Either you copy the [source file](#section-2) on your machine, and then launch it as follows:
+# Either you copy the [source file](#section-2) on your machine, and then launch it as followsi (please replace `login` with your login):
 #
-#     g5k-campaign -i path/to/file --gateway access.lille.grid5000.fr \
+#     g5k-campaign -i path/to/file --gateway access.grid5000.fr \
+#     -u `login` 
 #     SimpleCustomEngine
 #
 # or you directly pass the source file URI to `g5k-campaign` (but you can't make changes):
 #
 #     g5k-campaign -i https://github.com/grid5000/tutorials\
 #     /raw/master/api/2.0/g5k-campaign-tutorial.rb \
-#     --gateway access.lille.grid5000.fr \
+#     --gateway access.grid5000.fr \
+#     -u `login`
 #     SimpleCustomEngine
 #
 # As a side-note, if you are in the process of developing or modyfing an
@@ -256,11 +258,12 @@ end
 # ---------------------------
 
 # If all your engines are declared in the same file, just use the same command
-# as before but replace `SimpleCustomEngine` with `Grid` in the command:
+# as before but replace `SimpleCustomEngine` with `Grid` in the command (please replace `login` with your login):
 #
 #     g5k-campaign -i https://github.com/grid5000/tutorials\
 #     /raw/master/api/2.0/g5k-campaign-tutorial.rb \
-#     --gateway access.lille.grid5000.fr \
+#     --gateway access.grid5000.fr \
+#     -u `login`
 #     Grid
 #
 # If you have engines declared in more than one file, just use multiple `-i`
