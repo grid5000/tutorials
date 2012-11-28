@@ -45,20 +45,20 @@
           <a class="pilcrow" href="#section-2">&#182;</a>
         </div>
         <p>This tutorial will show you how to reserve nodes and deploy a specific
-environment on every site of Grid'5000 (granted there are nodes available),
+environment on every site of Grid'5000 (granted there are nodes available), 
 using the <a href="http://github.com/grid5000/restfully">Restfully</a> Ruby library.</p>
 
 <p>You can download the source file for this tutorial from here: <a href="https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb">https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb</a>.</p>
 
 <p>As <code>cURL</code>, <code>Restfully</code> can use a configuration file so that you don&rsquo;t need
-to enter your credentials by hand.
+to enter your credentials by hand. 
 Copy-paste the following in a terminal:</p>
 
 <pre><code>mkdir ~/.restfully
 cat &lt;&lt;EOF &gt; ~/.restfully/api.grid5000.fr.yml
 base_uri: https://api.grid5000.fr/2.0/grid5000
-username: "your-grid5000-login"
-password: "your-grid5000-password"
+username: &ldquo;your-grid5000-login&rdquo;
+password: &ldquo;your-grid5000-password&rdquo;
 EOF
 chmod 600 ~/.restfully/api.grid5000.fr.yml
 </code></pre>
@@ -71,7 +71,7 @@ information for <code>username</code> and <code>password</code>.</p>
 <pre><code>gem install restfully net-ssh-gateway
 </code></pre>
 
-<p>And you should be ready to go! From your local machine, you can run the
+<p>And you should be ready to go! From your local machine, you can run the 
 script with:</p>
 
 <pre><code>curl -k https://raw.github.com/grid5000/tutorials/master/\
