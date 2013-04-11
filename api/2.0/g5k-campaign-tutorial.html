@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>g5k-campaign-tutorial.rb</title>
-  <link rel="stylesheet" href="http://jashkenas.github.com/docco/resources/docco.css">
+  <link rel="stylesheet" href="./../../docco.css">
 </head>
 <body>
 <div id='container'>
@@ -33,7 +33,7 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-1">&#182;</a>
         </div>
-        
+
       </td>
       <td class=code>
         <div class='highlight'><pre></pre></div>
@@ -94,7 +94,7 @@ You can get a better feel of what it can do by displaying the usage help:</p>
 <li>deploy the <code>lenny-x64-base</code> environment on the reserved node.</li>
 </ul>
 
-<p>Note that you must have an SSH key installed on your machine, with the 
+<p>Note that you must have an SSH key installed on your machine, with the
 public part of that key in the authorized keys of the
 <code>access.grid5000.fr</code> machine.
 If this is not the case, follow the first steps as described at <a href="http://pkeck.myweb.uga.edu/ssh/">http://pkeck.myweb.uga.edu/ssh/</a>, or in the <a href="https://www.grid5000.fr/mediawiki/index.php/SSH">Grid'5000 wiki</a>.</p>
@@ -312,7 +312,7 @@ See <a href="http://net-ssh.github.com/multi/v1/api/index.html">http://net-ssh.g
           <a class="pilcrow" href="#section-20">&#182;</a>
         </div>
         <p>The following is just an example of what we can do once everything is setup and running.
-Here we&rsquo;ll just poll the values for two timeseries (our custom metric and <code>cpu_idle</code>). 
+Here we&rsquo;ll just poll the values for two timeseries (our custom metric and <code>cpu_idle</code>).
 We use the <a href="https://api.grid5000.fr/2.0/metrics/help/index.html">Metrology API</a> for that.</p>
       </td>
       <td class=code>
@@ -331,7 +331,7 @@ We use the <a href="https://api.grid5000.fr/2.0/metrics/help/index.html">Metrolo
         <div class="pilwrap">
           <a class="pilcrow" href="#section-21">&#182;</a>
         </div>
-        <p>In all engines you have access to a <code>connection</code> handler, which is 
+        <p>In all engines you have access to a <code>connection</code> handler, which is
 a <code>Restfully::Session</code> object that you can use to access the
 Grid'5000 API.</p>
 
@@ -382,7 +382,7 @@ Grid'5000 API.</p>
 Either you copy the <a href="#section-2">source file</a> on your machine, and then launch it as followsi (please replace <code>login</code> with your login):</p>
 
 <pre><code>g5k-campaign -i path/to/file &mdash;gateway access.grid5000.fr \
--u login 
+-u login
 SimpleCustomEngine
 </code></pre>
 

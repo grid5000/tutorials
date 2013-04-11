@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>restfully-tutorial.rb</title>
-  <link rel="stylesheet" href="http://jashkenas.github.com/docco/resources/docco.css">
+  <link rel="stylesheet" href="./../../docco.css">
 </head>
 <body>
 <div id='container'>
@@ -33,7 +33,7 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-1">&#182;</a>
         </div>
-        
+
       </td>
       <td class=code>
         <div class='highlight'><pre></pre></div>
@@ -45,13 +45,13 @@
           <a class="pilcrow" href="#section-2">&#182;</a>
         </div>
         <p>This tutorial will show you how to reserve nodes and deploy a specific
-environment on every site of Grid'5000 (granted there are nodes available), 
+environment on every site of Grid'5000 (granted there are nodes available),
 using the <a href="http://github.com/grid5000/restfully">Restfully</a> Ruby library.</p>
 
 <p>You can download the source file for this tutorial from here: <a href="https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb">https://github.com/grid5000/tutorials/blob/master/api/2.0/restfully-tutorial.rb</a>.</p>
 
 <p>As <code>cURL</code>, <code>Restfully</code> can use a configuration file so that you don&rsquo;t need
-to enter your credentials by hand. 
+to enter your credentials by hand.
 Copy-paste the following in a terminal:</p>
 
 <pre><code>mkdir ~/.restfully
@@ -71,7 +71,7 @@ information for <code>username</code> and <code>password</code>.</p>
 <pre><code>gem install restfully net-ssh-gateway
 </code></pre>
 
-<p>And you should be ready to go! From your local machine, you can run the 
+<p>And you should be ready to go! From your local machine, you can run the
 script with:</p>
 
 <pre><code>curl -k https://raw.github.com/grid5000/tutorials/master/\
@@ -246,8 +246,8 @@ Note that this is not needed if you operate from a Grid'5000 frontend.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre><span class="sx">%w{INT TERM}</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">signal</span><span class="o">|</span>
-  <span class="no">Signal</span><span class="o">.</span><span class="n">trap</span><span class="p">(</span><span class="n">signal</span><span class="p">){</span> 
-    <span class="n">cleanup!</span> 
+  <span class="no">Signal</span><span class="o">.</span><span class="n">trap</span><span class="p">(</span><span class="n">signal</span><span class="p">){</span>
+    <span class="n">cleanup!</span>
     <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
   <span class="p">}</span>
 <span class="k">end</span></pre></div>
@@ -442,7 +442,7 @@ What follows is a naive approach that works for small numbers of nodes.</p>
         <span class="k">end</span>
       <span class="k">end</span>
     <span class="k">end</span>
-    
+
   <span class="k">end</span></pre></div>
       </td>
     </tr>

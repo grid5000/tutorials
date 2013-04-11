@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
   <title>curl-tutorial.sh</title>
-  <link rel="stylesheet" href="http://jashkenas.github.com/docco/resources/docco.css">
+  <link rel="stylesheet" href="./../../docco.css">
 </head>
 <body>
 <div id='container'>
@@ -33,7 +33,7 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-1">&#182;</a>
         </div>
-        
+
       </td>
       <td class=code>
         <div class='highlight'><pre></pre></div>
@@ -44,7 +44,7 @@
         <div class="pilwrap">
           <a class="pilcrow" href="#section-2">&#182;</a>
         </div>
-        <p>This tutorial will show you how to use the <a href="http://man.cx/curl">cURL</a> 
+        <p>This tutorial will show you how to use the <a href="http://man.cx/curl">cURL</a>
 command-line tool to issue one-shot requests against the Grid'5000 API.</p>
       </td>
       <td class=code>
@@ -67,7 +67,7 @@ command-line tool to issue one-shot requests against the Grid'5000 API.</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-4">&#182;</a>
         </div>
-        <p>You&rsquo;ll need the cURL command-line tool. If it&rsquo;s not already installed, 
+        <p>You&rsquo;ll need the cURL command-line tool. If it&rsquo;s not already installed,
 use your package manager to fetch it. E.g.:</p>
 
 <pre><code>sudo apt-get install curl
@@ -113,7 +113,7 @@ rennes
      Content-Length: 2366
      Status: 200
      Content-Type: application/vnd.fr.grid5000.api.site+json;level<span class="o">=</span>1
-   
+
      <span class="o">{</span>
        <span class="s2">&quot;name&quot;</span>: <span class="s2">&quot;Rennes&quot;</span>,
        <span class="s2">&quot;latitude&quot;</span>: 48.1,
@@ -197,8 +197,8 @@ rennes
         <div class="pilwrap">
           <a class="pilcrow" href="#section-7">&#182;</a>
         </div>
-        <p>What you just did was getting the description of the <code>rennes</code> site. 
-The response is <a href="http://json.org/">JSON</a> formatted (JSON is a lightweight 
+        <p>What you just did was getting the description of the <code>rennes</code> site.
+The response is <a href="http://json.org/">JSON</a> formatted (JSON is a lightweight
 data interchange format), and contains a list of <code>links</code> to related
 resources.</p>
       </td>
@@ -211,7 +211,7 @@ resources.</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-8">&#182;</a>
         </div>
-        <p>If you want to avoid entering your credentials for every request, <code>cURL</code> can 
+        <p>If you want to avoid entering your credentials for every request, <code>cURL</code> can
 use a configuration file (<code>~/.netrc</code>) to store them.
 Then, you just have to pass the <code>-n</code> flag to <code>cURL</code> so that it takes it into account.</p>
       </td>
@@ -243,8 +243,8 @@ chmod 600 ~/.netrc</pre></div>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-10">&#182;</a>
         </div>
-        <p>If you want to see the full details of how the HTTP request is made, add the 
-<code>-v</code> flag to the command (lines prefixed with <code>&gt;</code> and <code>&lt;</code> repectively show 
+        <p>If you want to see the full details of how the HTTP request is made, add the
+<code>-v</code> flag to the command (lines prefixed with <code>&gt;</code> and <code>&lt;</code> repectively show
 what is sent to, and received from the server):</p>
 
 <pre><code>curl -kvni https://api.grid5000.fr/2.0/grid5000/sites/rennes
@@ -259,11 +259,11 @@ what is sent to, and received from the server):</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-11">&#182;</a>
         </div>
-        <p>Looking at the list of <code>links</code> in the description of the <code>rennes</code> site, 
+        <p>Looking at the list of <code>links</code> in the description of the <code>rennes</code> site,
 you can see that there is a lot of other URIs that can be followed.
 As an example, you can retrieve the site status with the following command.
 For each node, you&rsquo;ll see the node state and the next reservation.
-You can have a look at the <a href="https://api.grid5000.fr/2.0/status/help/index.html">Monitoring API documentation</a> 
+You can have a look at the <a href="https://api.grid5000.fr/2.0/status/help/index.html">Monitoring API documentation</a>
 for more information.</p>
 
 <pre><code>curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes/\
@@ -279,7 +279,7 @@ status
         <div class="pilwrap">
           <a class="pilcrow" href="#section-12">&#182;</a>
         </div>
-        <p>You can also fetch the list of scheduled jobs on the <code>rennes</code> site by 
+        <p>You can also fetch the list of scheduled jobs on the <code>rennes</code> site by
 issuing a request to the following URI.
 Note that you can remove the <code>-i</code> flag if you do not want to display the
 HTTP headers from the response.</p>
@@ -317,7 +317,7 @@ Use the <code>POST</code> method to create a new job that just sleeps for 30 min
      Content-Type: application/json
      Content-Length: 337
      Vary: Accept-Encoding
-   
+
      <span class="o">{</span>
        <span class="s2">&quot;uid&quot;</span>: 381093,
        <span class="s2">&quot;links&quot;</span>: <span class="o">[</span>
@@ -352,8 +352,8 @@ to see the full list of available parameters and usage.</p>
         <div class="pilwrap">
           <a class="pilcrow" href="#section-16">&#182;</a>
         </div>
-        <p>Notice the <code>201 Created</code> status code and the <code>Location</code> HTTP header in the previous response. 
-The latter indicates where the full job description can be fetched. 
+        <p>Notice the <code>201 Created</code> status code and the <code>Location</code> HTTP header in the previous response.
+The latter indicates where the full job description can be fetched.
 So let&rsquo;s see what we get:</p>
 
 <pre><code>curl -kni https://api.grid5000.fr/2.0/grid5000/sites/rennes\
@@ -368,7 +368,7 @@ So let&rsquo;s see what we get:</p>
      Expires: Mon, 04 Apr 2011 09:55:30 GMT
      Allow: GET, DELETE
      Vary: Accept-Encoding
-   
+
      <span class="o">{</span>
        <span class="s2">&quot;assigned_nodes&quot;</span>: <span class="o">[</span>
          <span class="s2">&quot;paramount-7.rennes.grid5000.fr&quot;</span>
@@ -380,7 +380,7 @@ So let&rsquo;s see what we get:</p>
        <span class="s2">&quot;submitted_at&quot;</span>: 1301910701,
        <span class="s2">&quot;project&quot;</span>: <span class="s2">&quot;default&quot;</span>,
        <span class="s2">&quot;events&quot;</span>: <span class="o">[</span>
-   
+
        <span class="o">]</span>,
        <span class="s2">&quot;uid&quot;</span>: 381093,
        <span class="s2">&quot;user_uid&quot;</span>: <span class="s2">&quot;crohr&quot;</span>,
@@ -397,7 +397,7 @@ So let&rsquo;s see what we get:</p>
          <span class="o">}</span>
        <span class="o">]</span>,
        <span class="s2">&quot;types&quot;</span>: <span class="o">[</span>
-   
+
        <span class="o">]</span>,
        <span class="s2">&quot;queue&quot;</span>: <span class="s2">&quot;default&quot;</span>,
        <span class="s2">&quot;started_at&quot;</span>: 1301910702,
