@@ -9,8 +9,11 @@ curl -k https://api.grid5000.fr/stable
 curl -k https://api.grid5000.fr/stable | json_pp
 curl -k https://api.grid5000.fr/stable/?pretty=yes
 
+./browse_using_ruby.rb
+
 restfully --uri https://api.grid5000.fr/stable restfully_count.rb
 restfully --uri https://api.grid5000.fr/stable restfully_count_free.rb
+restfully --uri https://api.grid5000.fr/stable restfully_submit.rb
 
 
 
