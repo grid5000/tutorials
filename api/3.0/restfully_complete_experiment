@@ -1,0 +1,192 @@
+# (c) 2012-2015 Inria by David Margery (david.margery@inria.fr) in the context of the Grid'5000 project
+# Licenced under the CeCILL B licence.
+
+require 'net/ssh'
+
+pdu_nodes= {}
+g5k_login=ENV["USER"]
+job_name = "Looking at power consumption with metrology API with #{File.basename($0)}"
+
+#Look for a previously submitted job of the same name
+#To avoid submitting submitting twice
+my_job=nil
+my_site=nil
+
+root.sites.each do |site| 
+  begin
+    if my_job==nil
+      site.jobs(:query => {:user =>g5k_login, :name => job_name}).each do |job|
+        if job["name"] == job_name && job['state'] != 'error'
+          my_job=job
+          my_site=site
+          break
+        end
+      end
+    end
+  rescue Restfully::HTTP::ServerError => e
+    puts "Site #{site["uid"]} unreachable"
+    # print e.message
+  end
+end
+
+# we do not have a running job
+# for this tutorial
+if my_job == nil   
+  puts "Did not find a job named #{job_name}"
+  root.sites.each do |site| 
+    site.clusters.each do |cluster| 
+      node_status=nil
+      cluster.nodes.each do |node| 
+        sensors=node["sensors"]
+        if sensors != nil
+          power_sensor=sensors["power"]
+          if power_sensor!= nil
+            probes=power_sensor["via"]
+            if probes!=nil
+              api_probe=probes["api"]
+              if api_probe!=nil
+                node_status=site.status["nodes"] if node_status == nil
+        	status=node_status[node["uid"]+"."+site["uid"]+".grid5000.fr"]
+                if status["soft"] == "free"
+                  if status["reservations"].size == 0 || (status["reservations"].size > 0 && Time.at(status["reservations"][0]["scheduled_at"])-Time.now>= 1800)
+                    pdu_nodes[api_probe["metric"]] = [] if ! pdu_nodes.has_key?(api_probe["metric"])
+                    pdu_nodes[api_probe["metric"]] << { :node => node,
+                      :cluster => cluster,
+                      :site => site
+                    }
+                  else
+                    puts "#{node["uid"]} not available long enough"
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+  
+  puts "Going to elect a node for our experiment" 
+  elected_node= if pdu_nodes["pdu"] != nil
+                  pdu_nodes["pdu"].pop
+                else
+                  pdu_nodes["pdu_shared"].pop if pdu_nodes["pdu_shared"] != nil
+                end
+  if elected_node != nil
+    my_site=elected_node[:site]
+    puts "Attempt to create a job on #{elected_node[:node]["uid"]}.#{elected_node[:site]["uid"]}.grid5000.fr"
+    begin
+      my_job=elected_node[:site].jobs.submit(
+                                             :resources => "nodes=1,walltime=00:45:00",
+                                             :properties => "network_address in ('#{elected_node[:node]["uid"]}.#{elected_node[:site]["uid"]}.grid5000.fr')",
+                                             :command => "sleep 3600",
+                                             :types => ["allow_classic_ssh"],
+                                             :name => job_name
+                                             )
+    rescue Restfully::HTTP::ServerError => e
+      status=elected_node[:node].status(:query => { :reservations_limit => '5'})
+      puts e.message
+      puts "#{status["system_state"]}"
+      pp status["reservations"]
+      puts "Could node get a job on #{elected_node[:node]["uid"]}. Please retry on another node"
+    end
+  else
+    puts "No available nodes for the experiment"
+  end
+end
+
+if my_job != nil
+  my_job.reload
+  puts "Found job #{my_job["uid"]} in state #{my_job["state"]}"
+  puts " expected to start at #{Time.at(my_job["scheduled_at"])}" if my_job["scheduled_at"] != nil
+  
+  wait_time=0
+  while my_job.reload['state'] != "running" && wait_time < 30
+    sleep 1
+    wait_time+=1
+    print '.'
+  end
+  
+  if my_job['state'] == "running"
+    puts "running on node #{my_job["assigned_nodes"]}. Need to do something with this job"
+    
+    fqdn=my_job["assigned_nodes"][0]
+    host=fqdn.split('.')[0]
+    cluster= host.match(/(\w+)-.*/)[1]
+
+    node=my_site.clusters[cluster.to_sym].nodes[host.to_sym]
+    threads=node["architecture"]["smt_size"]
+    
+    #did a lot of work to select a node that would have info here
+    # do not protect against nil values
+    metric=node["sensors"]["power"]["via"]["api"]["metric"]
+
+    gw=nil
+    if Socket.gethostname !~ /grid5000.fr/
+      require 'net/ssh/gateway'
+      # Need to connect to the node through a gateway
+      # A lot here depends on your ssh config
+      # usefull options are
+      # * :keys_only => true to use specified keys before keys offered by your ssh-agent
+      # * :verbose => :debug to see why the connection fails
+      # * :keys => ["private_key_file to use"]
+      # * :config => false to bypass your ssh_config file
+      gw=Net::SSH::Gateway.new('access.grid5000.fr', g5k_login, :keys_only => true)
+    end
+    
+    ssh= if gw
+           ssh=gw.ssh(my_job["assigned_nodes"][0], g5k_login, :keys_only => true )
+         else
+           ssh=Net::SSH.start(my_job["assigned_nodes"][0], g5k_login, :keys_only => true )
+         end
+    
+    #stress the node a bit to see the impact on consumption
+    events={}
+    start=DateTime.parse(ssh.exec!('date'))
+    cmd_time=240
+    cmds=["stress -t #{cmd_time} -c #{threads}", "stress -t #{cmd_time} -i  #{threads}","stress -t #{cmd_time} -m  #{threads}","stress -t #{cmd_time} -c  #{threads} -i  #{threads} -m  #{threads}", "sleep #{cmd_time}"]
+    cmds.each do |cmd|
+      events[DateTime.parse(ssh.exec!('date')).to_time.to_i]= "Now running #{cmd}"
+      ssh.exec!(cmd)
+    end
+    
+    ssh.close
+    gw.close(ssh.transport.port) if gw
+    
+    puts "will now query metric #{metric}"
+    data_desc=my_site.metrics[metric.to_sym]
+    probe_period=data_desc["step"]
+    data_desc["timeseries"].each do |timeserie|
+      data_period=timeserie["pdp_per_row"]*probe_period
+      collection_duration=timeserie["rows"]*data_period
+      print "  API keeps values every #{data_period}s for #{collection_duration}s"
+      if timeserie["pdp_per_row"] !=1
+        puts " running #{timeserie["cf"]} to plot a new value if #{(timeserie["xff"].to_f*100).to_i}% underlying values are present"
+      else
+        puts ""
+      end
+    end
+    
+    #get the values from this experiment
+    [metric.to_sym,:cpu_user,:cpu_system,:mem_free].each do |metric|
+      data_desc=my_site.metrics[metric]
+      pdu_values=data_desc.timeseries(:query => {:resolution => 15, :from => start.to_time.to_i})[host.to_sym]
+      sample_timestamp=pdu_values["from"]
+      sample_resolution=pdu_values["resolution"]
+      puts "Got values from #{Time.at(sample_timestamp)} at a resolution of a value every #{sample_resolution}s for #{metric}"
+      pdu_values["values"].each do |sample|
+        if !events.has_key?(sample_timestamp)
+          events[sample_timestamp]=""
+        end
+        events[sample_timestamp]+= " #{sample}W measured" if [:pdu,:shared_pdu].include?(metric)
+        events[sample_timestamp]+= " #{sample}% #{metric} measured" if [:cpu_user,:cpu_system].include?(metric)
+        events[sample_timestamp]+= " #{sample} Bytes of #{metric} measured" if [:mem_free,:mem_cache].include?(metric)
+        sample_timestamp+=sample_resolution
+      end
+    end
+
+    events.keys.sort!.each do | timestamp|
+      puts "#{Time.at(timestamp)}: #{events[timestamp]}"
+    end
+  end
+end
