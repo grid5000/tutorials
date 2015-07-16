@@ -6,7 +6,7 @@ pdu_nodes=[]
 
 root.sites.each do |site| 
   site.clusters.each do |cluster| 
-    node_status=nil
+    nodes_status=nil
     cluster.nodes.each do |node| 
       sensors=node["sensors"]
       if sensors != nil
@@ -16,8 +16,8 @@ root.sites.each do |site|
           if probes!=nil
             api_probe=probes["api"]
             if api_probe!=nil
-              node_status=site.status["nodes"] if node_status == nil
-	      status=node_status[node["uid"]+"."+site["uid"]+".grid5000.fr"]
+              nodes_status=site.status["nodes"] if nodes_status == nil
+	      status=nodes_status[node["uid"]+"."+site["uid"]+".grid5000.fr"]
               if status["soft"] == "free"
                 if status["reservations"].size == 0 || 
                   (status["reservations"].size > 0 && Time.at(status["reservations"][0]["scheduled_at"])-Time.now>= 3600)
