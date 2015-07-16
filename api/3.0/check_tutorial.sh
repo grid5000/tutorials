@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # (c) 2012-2015 Inria by David Margery (david.margery@inria.fr) in the context of the Grid'5000 project
 # Licenced under the CeCILL B licence.
