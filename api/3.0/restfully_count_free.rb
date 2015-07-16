@@ -19,8 +19,8 @@ root.sites.each do |site|
               node_status=site.status["nodes"] if node_status == nil
 	      status=node_status[node["uid"]+"."+site["uid"]+".grid5000.fr"]
               if status["soft"] == "free"
-                if status["reservations"].size > 0
-                  if Time.at(status["reservations"][0]["scheduled_at"])-Time.now>= 3600 
+                if status["reservations"].size == 0 || 
+                  (status["reservations"].size > 0 && Time.at(status["reservations"][0]["scheduled_at"])-Time.now>= 3600)
                     if api_probe["metric"] == "pdu_shared"
                       shared_pdu_nodes << node["uid"]+"."+site["uid"]+".grid5000.fr"
                     elsif api_probe["metric"] == "pdu"
@@ -28,9 +28,8 @@ root.sites.each do |site|
                     else
                       puts "Do not understand the metric #{api_probe}"
                     end
-                  else
-                    puts "#{node["uid"]} not available"
-                  end
+                else
+                  puts "#{node["uid"]} is free but not available long enough"
                 end
               end
             end
