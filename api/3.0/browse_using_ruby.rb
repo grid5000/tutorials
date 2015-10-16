@@ -5,6 +5,7 @@
 
 require 'net/http'
 require 'net/https'
+require 'openssl'
 require 'uri'
 require 'rubygems'
 require 'json'
