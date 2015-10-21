@@ -2,6 +2,7 @@
 
 # This tutorial will show you how to use the [cURL](http://man.cx/curl) 
 # command-line tool to issue one-shot requests against the Grid'5000 API.
+# It was written for version 2.0 of the API, but you should be able to adapt most exemple to the 3.0 version.
 
 # Prerequisites
 # ---------------------------
