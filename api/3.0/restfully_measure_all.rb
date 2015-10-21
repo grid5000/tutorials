@@ -7,6 +7,7 @@ pdu_nodes=[]
 root.sites.each do |site| 
   site.clusters.each do |cluster| 
     cluster.nodes.each do |node| 
+      fqdn=[node["uid"],site["uid"],root["uid"],"fr"]*'.'
       sensors=node["sensors"]
       if sensors != nil
         power_sensor=sensors["power"]
@@ -16,14 +17,16 @@ root.sites.each do |site|
             api_probe=probes["api"]
             if api_probe!=nil
               metric_name=api_probe["metric"]
-              print "looking for #{metric_name} "
+              print "looking for #{metric_name} metric for #{node["uid"]}: "
               metric=site.metrics[metric_name.to_sym]
-              if metric ==nil
-                puts "metrology API does not include metric #{metric_name} for #{node["uid"]} as reported by the reference API - please report the bug"
+              if metric == nil 
+                puts "metrology API does not include metric #{metric_name} for site #{site["uid"]} when it is referenced in the API for node #{node["uid"]}- please report the bug"
+              elsif !(metric["available_on"].include?(node["uid"]) || metric["available_on"].include?(fqdn))
+                puts "metrology API does not include metric #{metric_name} for node #{node["uid"]} when it is referenced in the API for node #{node["uid"]}- please report the bug"
               else
                 metrics= site.metrics[metric_name.to_sym].timeseries(:query => {:resolution => 15, :from => Time.now.to_i-600*1 })[node["uid"].to_sym]["values"]
                 metrics.compact!
-                puts "#{node["uid"]} last seen consumming #{metrics[metrics.size-1]} W (#{metric_name})"
+                puts "last seen consumming #{metrics[metrics.size-1]} W"
               end
             end
           end
