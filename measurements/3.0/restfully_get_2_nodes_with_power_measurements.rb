@@ -105,7 +105,8 @@ if my_job == nil
   
   while metric_nodes["power"].size != 0
     second_node=metric_nodes["power"].shift
-    if first_node[:site]==second_node[:site]
+    if first_node[:site]==second_node[:site] && first_node[:cluster]["uid"] !~ /orion/
+      #orion does not give good visual results
       break
     end
     first_node=second_node
@@ -114,10 +115,12 @@ if my_job == nil
     my_site=first_node[:site]
     puts "Attempt to create a job on #{first_node[:site]["uid"]} including #{first_node[:node]["uid"]} and #{second_node[:node]["uid"]}"
     begin
+      fqdn1="#{first_node[:node]["uid"]}.#{my_site["uid"]}.grid5000.fr"
+      fqdn2="#{second_node[:node]["uid"]}.#{my_site["uid"]}.grid5000.fr"
       my_job=my_site.jobs.submit(
                                  :resources => "nodes=2,walltime=00:00:#{job_sleeptime}",
-                                 :properties => "network_address in ('#{first_node[:node]["uid"]}.#{my_site["uid"]}.grid5000.fr','#{second_node[:node]["uid"]}.#{my_site["uid"]}.grid5000.fr')",
-                                 :command => "sleep 10d",
+                                 :properties => "network_address in ('#{fqdn1}','#{fqdn2}')",
+                                 :command => "nuttcp -S ; sleep 10d",
                                  :types => ["allow_classic_ssh"],
                                  :name => job_name
                                  )
@@ -142,16 +145,16 @@ if my_job != nil
   end
   puts "Found job #{my_job["uid"]} at #{job_site} in state #{my_job["state"]}"
   puts " expected to start at #{Time.at(my_job["scheduled_at"])}" if my_job["scheduled_at"] != nil
-  puts " expected to end at #{Time.at(my_job["started_at"])+my_job["walltime"].to_i}" if my_job["started_at"] != nil
+  puts " expected to end at #{Time.at(my_job["started_at"])+my_job["walltime"].to_i}" if my_job["started_at"] != nil && my_job["started_at"]!=0
   wait_time=0
-  while my_job.reload['state'] != "running" && wait_time < 30
+  while my_job.reload['state'] != "running" && wait_time < 45
     sleep 1
     wait_time+=1
     print '.'
   end
   
   if my_job['state'] == "running"
-    puts " running on node #{my_job["assigned_nodes"]}. Need to do something with this job"
+    puts " running on node #{my_job["assigned_nodes"]}. Need to do something with this job. Connect to it using oarsub -C #{my_job['uid']}"
   end
 end  
 
