@@ -26,18 +26,16 @@ root.sites.each do |site|
             metric_nodes[metric_name]=[]
           end
           
-          if pdu_info.is_a?(Array) && pdu_info.size!=1 && pdu_info.first.is_a?(Array)
-            #Array in array we have 2 competing measurement systems
-            puts "    #{node["uid"]} has 2 competing measurement systems. Ignore"
-          else
-            #handle the simple case here where the node is only connected one measurement system
-            if pdu_info.is_a?(Array) && pdu_info.size==1 
-              pdu_info=pdu_info.first
-            end
-            unless pdu_info.is_a?(Array)
-              #handle the simple case here where the node is only connected to one pdu.
-              if site_pdus[pdu_info["uid"]]
-                #the pdu has per outlet measurments
+          unless pdu_info.size <= 0
+            if pdu_info.first.is_a?(Array)
+              #Array in array we have 2 competing measurement systems
+              puts "    #{node["uid"]} has 2 competing measurement systems. Ignore"
+            elsif pdu_info.size == 1
+              # handle the simple case here where the node is only connected 
+              # to one one measurement system and one pdu 
+              unique_pdu_info=pdu_info.first
+              if site_pdus[unique_pdu_info["uid"]]
+                #the pdu has per outlet measurements
                 metric_nodes[metric_name] << node["uid"]+"."+site["uid"]+".grid5000.fr"
               end
             end
