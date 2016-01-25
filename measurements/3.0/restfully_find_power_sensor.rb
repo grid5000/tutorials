@@ -6,22 +6,13 @@ metric_nodes={}
 root.sites.each do |site| 
   site.clusters.each do |cluster| 
     cluster.nodes.each do |node| 
-      sensors=node["sensors"]
-      if sensors != nil
-        power_sensor=sensors["power"]
-        if power_sensor!= nil
-          probes=power_sensor["via"]
-          if probes!=nil
-            api_probe=probes["api"]
-            if api_probe!=nil
-              metric_name=api_probe["metric"]
-              if !metric_nodes.has_key?(metric_name)
-                metric_nodes[metric_name]=[]
-              end
-              metric_nodes[metric_name] << node["uid"]+"."+site["uid"]+".grid5000.fr"
-            end
-          end
+      api_probe=node["sensors"]["power"]["via"]["api"] rescue nil
+      if api_probe!=nil
+        metric_name=api_probe["metric"]
+        if !metric_nodes.has_key?(metric_name)
+          metric_nodes[metric_name]=[]
         end
+        metric_nodes[metric_name] << node["uid"]+"."+site["uid"]+".grid5000.fr"
       end
     end
   end
