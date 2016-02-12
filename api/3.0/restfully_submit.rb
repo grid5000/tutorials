@@ -1,7 +1,7 @@
-# (c) 2012-2015 Inria by David Margery (david.margery@inria.fr) in the context of the Grid'5000 project
+# (c) 2012-2016 Inria by David Margery (david.margery@inria.fr) in the context of the Grid'5000 project
 # Licenced under the CeCILL B licence.
 
-job_name = "Looking at power consumption with metrology API with #{File.basename($0)}"
+job_name = "Running the API all in one Tutorial to learn to reserve nodes #{File.basename($0)}"
 
 #Look for a previously submitted job of the same name
 #To avoid submitting submitting twice
@@ -24,48 +24,39 @@ end
 
 if my_job==nil
   #we fallback to looking for available resources
-  pdu_nodes={}
+  suitable_nodes=[]
 
   root.sites.each do |site| 
-    site.clusters.each do |cluster| 
-      node_status=nil
-      cluster.nodes.each do |node| 
-        sensors=node["sensors"]
-        if sensors != nil
-          power_sensor=sensors["power"]
-          if power_sensor!= nil
-            probes=power_sensor["via"]
-            if probes!=nil
-              api_probe=probes["api"]
-              if api_probe!=nil
-                node_status=site.status["nodes"] if node_status == nil
-        	status=node_status[node["uid"]+"."+site["uid"]+".grid5000.fr"]
-                if status["soft"] == "free"
-                  if status["reservations"].size > 0
-                    if Time.at(status["reservations"][0]["scheduled_at"])-Time.now>= 1800 
-                       pdu_nodes[api_probe["metric"]] = [] if ! pdu_nodes.has_key?(api_probe["metric"])
-                      pdu_nodes[api_probe["metric"]] << { :node => node,
+    begin
+      site.clusters.each do |cluster| 
+        nodes_status=nil
+        cluster.nodes.each do |node| 
+          if node["storage_devices"].size == 1
+            # there is at least one interesting node in this site
+            # get the status of nodes
+            nodes_status=site.status["nodes"] if nodes_status == nil
+            status=nodes_status[node["uid"]+"."+site["uid"]+".grid5000.fr"]
+            if status["soft"] == "free"
+              if status["reservations"].size == 0 || 
+                  (status["reservations"].size > 0 && Time.at(status["reservations"][0]["scheduled_at"])-Time.now>= 3600)
+                suitable_nodes << { :node => node,
                         :cluster => cluster,
                         :site => site
-                      }
-                    else
-                      puts "#{node["uid"]} not available"
-                    end
-                  end
-                end
+                }
+              else
+                puts "#{node["uid"]} is free but not available long enough"
               end
             end
           end
         end
       end
+    rescue Restfully::HTTP::ServerError => e
+      puts "Could not access information from #{site["uid"]}"
     end
   end
+    
+  elected_node= suitable_nodes.pop
 
-  elected_node= if pdu_nodes["pdu"] != nil
-                pdu_nodes["pdu"].pop
-              else
-                pdu_nodes["pdu_shared"].pop if pdu_nodes["pdu_shared"] != nil
-              end
   if elected_node != nil
     puts "Attempt to create a job on #{elected_node[:node]["uid"]}.#{elected_node[:site]["uid"]}.grid5000.fr"
     begin
