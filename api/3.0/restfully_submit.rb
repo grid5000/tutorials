@@ -55,7 +55,7 @@ if my_job==nil
     end
   end
     
-  elected_node= suitable_nodes.pop
+  elected_node = suitable_nodes.pop
 
   if elected_node != nil
     puts "Attempt to create a job on #{elected_node[:node]["uid"]}.#{elected_node[:site]["uid"]}.grid5000.fr"
@@ -88,9 +88,10 @@ if my_job != nil
     wait_time+=1
     print '.'
   end
-
   if my_job['state'] == "running"
-    puts "running on node #{my_job["assigned_nodes"]}. Need to do something with this job"
+    puts "running on node #{my_job["assigned_nodes"].first}. Need to do something with this job. Ssh to #{my_job["assigned_nodes"].first.split('.')[1]} and connect to the job using oarsub -C #{my_job['uid']}"
+  else
+    puts "Stopped waiting for the job to start."
   end
 end
 
