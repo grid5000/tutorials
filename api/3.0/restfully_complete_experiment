@@ -105,7 +105,7 @@ if my_job != nil
     cluster= host.match(/(\w+)-.*/)[1]
 
     node=my_site.clusters[cluster.to_sym].nodes[host.to_sym]
-    threads=node["architecture"]["smt_size"]
+    threads=node["architecture"]["nb_threads"]
     
     gw=nil
     if Socket.gethostname !~ /grid5000.fr/
