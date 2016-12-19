@@ -342,6 +342,9 @@ kwapi_but_not_reference_sites=sites_with_power_in_metrology_api-sites_with_power
 if kwapi_but_not_reference_sites.size > 0
   puts "#{kwapi_but_not_reference_sites.size} sites are advertising a \"power\" metric, probably produced by kwapi, but have no nodes advertising it as a metric accessible through the API (#{kwapi_but_not_reference_sites})"
   printed_stuff=true
+  kwapi_but_not_reference_sites.each do |site|
+    site_errors[site] << "Metrology advertises a \"power\" metric in #{site}, probably produced by kwapi, but no nodes are advertized as monitored through that metric"
+  end
 end
 
 puts "" if printed_stuff
