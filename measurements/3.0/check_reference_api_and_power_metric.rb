@@ -132,6 +132,44 @@ def get_probe_name(site_pdus,site_errors,pdu_info,site)
   pdu_probe_name
 end
 
+# return value : whether the related pdu
+# allows a per_outlet measure for each of its ports
+# - nil:   the API did not have the information
+# - true:  a reading for the specified port is possible, but no check whether
+#          more than one node contributes to it 
+# - false: no reading for the specified port is available,
+#          or that pdu_info does not describe a port  
+def handle_pdu_info_for_node(site_pdus, site_errors, pdu_nodes, site, node, a_pdu_info)
+  pdu_probe_name=get_probe_name(site_pdus, site_errors, a_pdu_info, site)
+  update_pdu_nodes(pdu_nodes, pdu_probe_name, node, site)
+  per_outlet=site_pdus[site["uid"]][a_pdu_info["uid"]] rescue nil
+  if per_outlet.nil?
+    site_errors[site["uid"]] << "No per_outlet info in #{site["uid"]} for #{pdu_info["uid"]}"
+  end
+  return per_outlet
+end
+
+# return value : whether the measurement system
+# allows a per_outlet measure
+# - nil indicates that at least one of the related pdus did not
+#       have the information
+# - true indicates that the all the referenced pdus handle per-outlet measurments
+#       It does not guarantee that the node is the only contributor to that measure
+# - false indicates that their is at least one related pdu for which no reading
+#         for the connected port is available 
+def handle_power_measurement_system_for_node(site_pdus, site_errors, pdu_nodes, site, node, pdu_info)
+  if pdu_info.is_a?(Array)
+    per_outlet=true
+    pdu_info.each do |a_pdu_info|
+      local_per_outlet=handle_pdu_info_for_node(site_pdus, site_errors, pdu_nodes, site, node, a_pdu_info)
+      per_outlet=per_outlet && local_per_outlet
+    end
+  else
+    per_outlet=handle_pdu_info_for_node(site_pdus, site_errors, pdu_nodes, site, node, pdu_info)
+  end
+  return per_outlet
+end
+
 api_metric_nodes={}
 power_nodes=[]
 pdu_nodes={}
@@ -193,39 +231,25 @@ root.sites.each do |site|
             unless pdu_info.nil?
               if pdu_info.is_a?(Array) && pdu_info.size!=1 && pdu_info.first.is_a?(Array)
                 #Array in array we have 2 competing measurement systems
-                site_errors[site["uid"]] << "#{node["uid"]} has 2 competing measurement systems. Not handled"
+                per_outlet=false
+                pdu_info.each do |alternate_pdu_info|
+                  alternate_per_outlet=handle_power_measurement_system_for_node(site_pdus,
+                                                                                site_errors,
+                                                                                pdu_nodes,
+                                                                                site,
+                                                                                node,
+                                                                                alternate_pdu_info)
+                  per_outlet = per_outlet || alternate_per_outlet
+                end
               else
-                #handle the simple case here where the node is only connected one measurement system
-                if pdu_info.is_a?(Array) && pdu_info.size==1 
-                  pdu_info=pdu_info.first
-                end
-                unless pdu_info.is_a?(Array)
-                  #handle the simple case here where the node is only connected to one pdu.
-                  pdu_probe_name=get_probe_name(site_pdus, site_errors, pdu_info, site)
-                  update_pdu_nodes(pdu_nodes, pdu_probe_name, node, site)
-                  if site_pdus[site["uid"]][pdu_info["uid"]].nil?
-                    site_errors[site["uid"]] << "No per_outlet info in #{site["uid"]} for #{pdu_info["uid"]}"
-                    node_power_connectivity["unknown"] << node
-                  elsif site_pdus[site["uid"]][pdu_info["uid"]]
-                    node_power_connectivity["per_outlet"] << node
-                  else
-                    node_power_connectivity["shared"] << node
-                  end
-                else
-                  per_outlet=true
-                  pdu_info.each do |a_pdu_info|
-                    pdu_probe_name=get_probe_name(site_pdus, site_errors, a_pdu_info, site)
-                    update_pdu_nodes(pdu_nodes, pdu_probe_name, node, site)
-                    per_outlet=per_outlet && site_pdus[site["uid"]][a_pdu_info["uid"]] rescue nil
-                  end
-                  if per_outlet.nil?
-                    node_power_connectivity["unknown"] << node
-                  elsif per_outlet
-                    node_power_connectivity["per_outlet"] << node
-                  else
-                    node_power_connectivity["shared"] << node
-                  end
-                end
+                per_outlet=handle_power_measurement_system_for_node(site_pdus, site_errors, pdu_nodes, site, node, pdu_info)
+              end
+              if per_outlet.nil?
+                node_power_connectivity["unknown"] << node
+              elsif per_outlet
+                node_power_connectivity["per_outlet"] << node
+              else
+                node_power_connectivity["shared"] << node
               end
             end
           end
