@@ -137,9 +137,19 @@ power_nodes=[]
 pdu_nodes={}
 site_pdus={}
 site_errors={}
+monitoring_nodes={}
 node_power_connectivity={"per_outlet"=>[],"unknown"=>[],"shared"=>[]}
+sites_with_power_in_metrology_api=[]
+sites_with_power_in_reference_api=[]
+nodes_site={}
+nodes_index={}
+
+puts "***** Gathering information ***************"
+
 root.sites.each do |site| 
-  # next unless site["uid"]=="rennes"
+  if ENV.has_key?('SITE')
+    next unless site["uid"]==ENV['SITE']
+  end
   puts "looking at reference API description for #{site["uid"]}"
   site_pdus[site["uid"]]={}
   site_errors[site["uid"]]=[]
@@ -154,6 +164,16 @@ root.sites.each do |site|
   # next unless cluster["uid"]=="graphene"
     puts "  looking at data for cluster #{cluster["uid"]}"
     cluster.nodes.each do |node| 
+      nodes_index[node["uid"]]=node
+      nodes_site[node["uid"]]=site["uid"]
+      monitoring=node["monitoring"]["wattmeter"] rescue nil
+      if monitoring.nil?
+        puts "#{node["uid"]} has no ['monitoring']['wattmeter'] entry"
+        #site_errors[site["uid"]] << "#{node["uid"]} has no ['monitoring']['wattmeter'] entry"
+      else
+        monitoring_nodes[monitoring]= [] unless monitoring_nodes.has_key?(monitoring)
+        monitoring_nodes[monitoring] << node["uid"]
+      end
       sensors=node["sensors"]
       if sensors != nil
         power_sensor=sensors["power"]
@@ -163,6 +183,7 @@ root.sites.each do |site|
             api_probe=probes["api"]
             if api_probe!=nil
               metric_name=api_probe["metric"]
+              sites_with_power_in_reference_api << site["uid"] if metric_name=="power"
               if !api_metric_nodes.has_key?(metric_name)
                 api_metric_nodes[metric_name]=[]
               end
@@ -214,9 +235,12 @@ root.sites.each do |site|
   end
 
   puts "Looking for metric named 'power' at #{site["uid"]}"
+  old_retry=session.config.options[:retry_on_error]
+  session.config.options[:retry_on_error]=0
   begin
     power_metric=site.metrics[:power]
     if !power_metric.nil?
+      sites_with_power_in_metrology_api << site["uid"]
       power_metric_probes=power_metric["available_on"]
       if !power_metric_probes.nil?
         power_metric_probes.each do |probe_name|
@@ -235,53 +259,123 @@ root.sites.each do |site|
       end
     end
   rescue Exception => e
-    site_errors[site["uid"]] << "Could not find metrics named 'power' at #{site["uid"]} because of exception #{e.to_s[0..40]}..."
+    puts "Did not find metrics named 'power' at #{site["uid"]} because of exception #{e.to_s[0..40]}... (OK if kwapi not installed)"
   end
+  session.config.options[:retry_on_error]=old_retry
 end
 
-puts "Power sensor description of nodes through ['sensors']['power']['via']['api']"
+puts "\n\n****** Analysing the gathered information *************"
+
+puts "\nPower sensor description of nodes through ['sensors']['power']['via']['api']"
 nodes_with_metrics=[]
 api_metric_nodes.each do |metric,nodes|
   nodes.uniq!
   nodes_with_metrics+=nodes.map{|n| n.split('.')[0]}
-  puts "  Found #{nodes.size} nodes with a power sensor named '#{metric}' in the API (#{compact_nodes(nodes)})" if nodes.size > 0
+  puts "  Found #{nodes.size} nodes with a power metric named '#{metric}' in the API (#{compact_nodes(nodes)})" if nodes.size > 0
 end
 
-puts "Information from the reference API connecting pdus and ['sensors']['power']['via']['pdu'] information"
+
+puts "\nMonitoring information through ['monitoring']['wattmeter']"
+puts "(see https://www.grid5000.fr/mediawiki/index.php/TechTeam:Reference_Repository#Monitoring_section for meaning)"
+monitoring_nodes.each do |value, nodes|
+  puts "  Found #{nodes.size} nodes with '#{value}' as power monitoring property advertised by ['monitoring']['wattmeter'] for OAR (nodes #{compact_nodes(nodes)})" 
+end
+
+puts "\nInformation from the reference API connecting pdus and ['sensors']['power']['via']['pdu'] information"
 probes_of_one_node=pdu_nodes.select {|probe,description| description[:type]=="node"}
 probes_of_one_node_nodes=probes_of_one_node.collect {|probe,description| description}.map {|e| e[:uid]}.flatten
-puts "  #{probes_of_one_node.size} pdu measurements points (ports) only connected to one node (to nodes #{compact_nodes(probes_of_one_node_nodes)})" if probes_of_one_node.size > 0
+puts "  #{probes_of_one_node.size} pdu measurements points (ports) only referenced by one node (to nodes #{compact_nodes(probes_of_one_node_nodes)})" if probes_of_one_node.size > 0
 
 probes_of_multiple_nodes=pdu_nodes.select {|probe,description| description[:type]=="multiple"}
 probes_of_multiple_nodes_nodes=probes_of_multiple_nodes.collect {|probe,description| description}.map {|e| e[:endpoints]}.flatten.map{|e| e[:uid]}
-puts "  #{probes_of_multiple_nodes.size} pdu measurements points (ports) connected to more than one node (to nodes #{compact_nodes(probes_of_multiple_nodes_nodes)})" if probes_of_multiple_nodes.size > 0
+puts "  #{probes_of_multiple_nodes.size} pdu measurements points (ports) referenced by more than one node (to nodes #{compact_nodes(probes_of_multiple_nodes_nodes)})" if probes_of_multiple_nodes.size > 0
+
+puts ""
+printed_stuff=false
 
 # check 'per_outlet' information
 nodes_linked_to_pdus=[]
 node_power_connectivity.each do |connectivity,nodes| 
   nodes.uniq!
   nodes_linked_to_pdus+=nodes.map{|n| n["uid"]}
-  puts "  #{nodes.size} nodes have a #{connectivity} power measurement according to information from site/<site>/pdus and all pdus referenced by ['sensors']['power']['via']['pdu'] in the reference API (#{compact_nodes(nodes.map{|n| n["uid"]})})" if nodes.size != 0
+  if nodes.size != 0
+    puts "  #{nodes.size} nodes have a #{connectivity} power measurement according to pdu description from site/<site>/pdus for all their pdus as referenced by ['sensors']['power']['via']['pdu'] in the reference API (#{compact_nodes(nodes.map{|n| n["uid"]})})"
+    printed_stuff=true
+  end
 end
 
 # check ['via']['pdu'] and ['via']['api'] 
 #    ['via']['pdu'] but no ['via']['api'] only acceptable if the pdu is not monitored (but why describe it then)
 pdu_but_not_api=nodes_linked_to_pdus-nodes_with_metrics
-puts "  #{pdu_but_not_api.size} nodes have ['sensors']['power']['via']['pdu'] information, but no ['sensors']['power']['via']['api'] metric referenced in the API (#{compact_nodes(pdu_but_not_api)}): can happen" if pdu_but_not_api.size > 0
+if pdu_but_not_api.size > 0
+  puts "  #{pdu_but_not_api.size} nodes have ['sensors']['power']['via']['pdu'] information, but no ['sensors']['power']['via']['api'] metric referenced in the API (#{compact_nodes(pdu_but_not_api)}): allowed" 
+  printed_stuff=true
+end
 
 # check ['via']['pdu'] and ['via']['api'] 
 #    ['via']['api'] but no ['via']['pdu'] not acceptable
 api_but_not_pdu=nodes_with_metrics-nodes_linked_to_pdus
-puts "  #{api_but_not_pdu.size} nodes have power metrics referenced in the API but no pdu information (#{compact_nodes(api_but_not_pdu)}): should not happen" if api_but_not_pdu.size > 0
+if api_but_not_pdu.size > 0
+  puts "  #{api_but_not_pdu.size} nodes have power metrics referenced in the API but no pdu information (#{compact_nodes(api_but_not_pdu)}): should not happen" 
+  printed_stuff=true
+  api_but_not_pdu.each do |node|
+    site_errors[nodes_site[node]] << "#{node} has a #{nodes_index[node]['sensors']['power']['via']['api']['metric']} metric described in the API, but no pdu information in ['sensors']['power']['via']['pdu'] to understand it" 
+  end
+end
+
+puts "" if printed_stuff
+printed_stuff=false
+
+# Check all sites that have nodes advertising the "power" metric
+# accessible via the api
+# but no power metric reachable through metrology API
+sites_with_power_in_reference_api.uniq!
+reference_but_not_kwapi_sites=sites_with_power_in_reference_api-sites_with_power_in_metrology_api
+if reference_but_not_kwapi_sites.size > 0
+  puts "#{reference_but_not_kwapi_sites.size} sites have nodes advertising a \"power\" metric but none visible from the metrology API (kwapi not installed ?) (#{reference_but_not_kwapi_sites})"
+  printed_stuff=true
+end
+
+# Check all sites that have kwapi installed, but no nodes
+# advertising a "power" metric accessible via the api
+kwapi_but_not_reference_sites=sites_with_power_in_metrology_api-sites_with_power_in_reference_api
+if kwapi_but_not_reference_sites.size > 0
+  puts "#{kwapi_but_not_reference_sites.size} sites are advertising a \"power\" metric, probably produced by kwapi, but have no nodes advertising it as a metric accessible through the API (#{kwapi_but_not_reference_sites})"
+  printed_stuff=true
+end
+
+puts "" if printed_stuff
+printed_stuff=false
 
 puts "Information from the 'power' metric as related to nodes through pdu mapping in the reference API"
-api_but_not_metrics=api_metric_nodes["power"]-power_nodes
-puts "  #{api_but_not_metrics.size} advertised as accessible through the api via 'power', but not visible through the 'power' metric (#{compact_nodes(api_but_not_metrics)})" if api_but_not_metrics.size > 0
-metrics_but_not_api=power_nodes-api_metric_nodes["power"]
-puts "  #{metrics_but_not_api.size} nodes visible through the 'power' metric but not referencing access through the reference API in ['sensors']['power']['via']['api'] via 'power' (#{compact_nodes(metrics_but_not_api)})" if metrics_but_not_api.size > 0
-
+if api_metric_nodes.has_key?("power") 
+  api_but_not_metrics=api_metric_nodes["power"]-power_nodes 
+  if api_but_not_metrics.size > 0
+    puts "  #{api_but_not_metrics.size} nodes advertised as having 'power' metric accessible through the API (see ['sensors']['power']['via']['api']), but not visible through the 'power' metric (#{compact_nodes(api_but_not_metrics)})"
+    api_but_not_metrics.each do |node|
+      site_errors[nodes_site[node]] << "#{node} advertised as having 'power' metric in ['sensors']['power']['via']['api'], but not visible through the 'power' metric (see metrics[:power]['available_on'])"
+    end
+  end
+  
+  metrics_but_not_api=power_nodes-api_metric_nodes["power"] 
+  if metrics_but_not_api.size > 0
+    puts "  #{metrics_but_not_api.size} nodes visible through the 'power' metric but not referencing access through the reference API in ['sensors']['power']['via']['api'] via 'power' (#{compact_nodes(metrics_but_not_api)})" 
+    metrics_but_not_api.each do |node|
+      site_errors[nodes_site[node]] << "#{node} visible through the 'power' metric but not referencing access through the reference API in ['sensors']['power']['via']['api'] via 'power'"
+    end
+  end
+else
+  puts "  no node with a metric named 'power'. kwapi probably not installed"
+end
 
 pdu_but_not_available_on=nodes_linked_to_pdus-power_nodes
-puts "  #{pdu_but_not_available_on.size} nodes have ['sensors']['power']['via']['pdu'] information, but are not linked to a probe referenced by metrics[:power]['available_on'] (#{compact_nodes(pdu_but_not_available_on)})" if pdu_but_not_available_on.size > 0
+if pdu_but_not_available_on.size > 0
+  puts "  #{pdu_but_not_available_on.size} nodes have ['sensors']['power']['via']['pdu'] information, but are not linked to a probe referenced by metrics[:power]['available_on'] (#{compact_nodes(pdu_but_not_available_on)})" 
+  pdu_but_not_available_on.each do |node|
+    site_errors[nodes_site[node]] << "#{node} has ['sensors']['power']['via']['pdu'] information, but is not linked to a probe referenced by metrics[:power]['available_on']"
+  end
+end
+
+puts "\n********* Error summary ******************************"
 
 pp site_errors 
