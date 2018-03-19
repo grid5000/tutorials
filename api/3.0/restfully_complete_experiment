@@ -118,14 +118,14 @@ if my_job != nil
       # * :keys => ["private_key_file to use"]
       # * :config => false to bypass your ssh_config file
       puts "  created a gateway for the ssh connexion"
-      gw=Net::SSH::Gateway.new('access.grid5000.fr', g5k_login, :keys_only => true)
+      gw=Net::SSH::Gateway.new('access.grid5000.fr', g5k_login)
     end
     
     ssh= if gw
            puts "  connecting to #{my_job["assigned_nodes"][0]} through gateway"
-           ssh=gw.ssh(my_job["assigned_nodes"][0], g5k_login, :keys_only => true )
+           ssh=gw.ssh(my_job["assigned_nodes"][0], g5k_login)
          else
-           ssh=Net::SSH.start(my_job["assigned_nodes"][0], g5k_login, :keys_only => true )
+           ssh=Net::SSH.start(my_job["assigned_nodes"][0], g5k_login)
          end
     
     #stress the node a bit to see the impact on consumption
